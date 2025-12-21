@@ -1,0 +1,29 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : Dec 18, 2025, 10:38:18 PM
+    Author     : Daniel García
+*/
+
+#activityBox {
+    max-width: 600px;
+    margin: 0 auto 20px;
+    text-align: center;
+}
+
+#activityBox img {
+    width: 100%; 
+    height: auto;
+    display: block;
+    border-radius: 8px;
+}
+
+/* Navbar aligned with image */
+#activityBox + nav {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+

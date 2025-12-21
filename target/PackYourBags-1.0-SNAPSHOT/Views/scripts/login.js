@@ -5,7 +5,7 @@
 $("#formLogin").submit(function(e){
     e.preventDefault();
     
-    window.location.href = "/views/mainMenu.html";
+    window.location.href = "/views/selectActivity.html";
 });
 
 
