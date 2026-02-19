@@ -1,0 +1,38 @@
+.loginPage{
+    background-image: url("../../assets/img/background.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 100vw; 
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.container { 
+    text-align: center; 
+}
+.container.title { 
+    max-width: 400px; 
+    background: rgba(0, 0, 0, 0.6);
+    padding: 30px; 
+    border-radius: 10px; 
+    color: #fff; 
+}
+
+.title h2 { 
+    font-size: 4rem; 
+    color: #ffffff;
+    font-weight: 700;
+    margin-bottom: 20px; 
+}
+
+.login-box {
+    max-width: 400px;
+    margin: 0 auto; /* center horizontally */
+    background: rgba(0, 0, 0, 0.6);
+    padding: 30px;
+    border-radius: 10px;
+    color: #fff;
+}
