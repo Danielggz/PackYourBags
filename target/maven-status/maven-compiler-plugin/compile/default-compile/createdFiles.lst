@@ -1,7 +1,0 @@
-main.class
-Models\User.class
-Models\Trail.class
-com\dggz\packyourbags\resources\JakartaEE10Resource.class
-Controllers\DB_connect.class
-Controller.class
-com\dggz\packyourbags\JakartaRestConfiguration.class
