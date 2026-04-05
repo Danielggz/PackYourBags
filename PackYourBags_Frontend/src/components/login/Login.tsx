@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Login.css";
+import "./login.css"
 
 export default function Login() {
   const [email, setEmail] = useState("user@fakemail.com");
@@ -62,7 +62,7 @@ export default function Login() {
             </form>
 
             <br />
-            If you are not registered, sign up <a href="#">here</a>
+            If you are not registered, sign up <a href="/register">here</a>
           </div>
         </div>
       </div>

@@ -24,8 +24,8 @@ public class UserController {
         return service.getAllUsers();
     }
 
-    @PostMapping
-    public User createUser(@RequestBody User user) {
+    @PostMapping("/createUser")
+        public User createUser(@RequestBody User user) {
         return service.createUser(user);
     }
 
@@ -41,7 +41,7 @@ public class UserController {
 
     @PostMapping("/test")
     public User testDatabase() {
-        User u = new User("TestUser", "test@example.com", "m", 171, 72.5F, "abc123.");
+        User u = new User("TestUser", "user", "userson", "test@example.com", "m", 171, 72.5F, "abc123.");
         return repo.save(u);
     }
 }
