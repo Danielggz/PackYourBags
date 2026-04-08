@@ -35,6 +35,7 @@ export default function SelectActivity() {
         }).addTo(map);
       });
   }, []);
+  
 
   return (
     <div>
