@@ -2,7 +2,7 @@ version: 2.1
 
 workflows:
   version: 2
-  build:
+  build_all:
     jobs:
       - backend_build:
           filters:
@@ -16,20 +16,14 @@ workflows:
 jobs:
   backend_build:
     docker:
-      - image: cimg/node:20.0
-    working_directory: ~/PackYourBags_Backend
+      - image: cimg/openjdk:17.0
+    working_directory: ~/project/PackYourBags_Backend
     steps:
       - checkout:
-          path: ~/PackYourBags_Backend
+          path: ~/project
       - run:
-          name: Install backend dependencies
-          command: npm install
-      - run:
-          name: Run backend tests
-          command: npm test
-      - run:
-          name: Build backend
-          command: npm run build
+          name: Build Spring Boot backend
+          command: mvn -B clean package
 
   frontend_build:
     docker:
@@ -37,7 +31,7 @@ jobs:
     working_directory: ~/project/PackYourBags_Frontend
     steps:
       - checkout:
-          path: ~/PackYourBags_Frontend
+          path: ~/project
       - run:
           name: Install frontend dependencies
           command: npm install
