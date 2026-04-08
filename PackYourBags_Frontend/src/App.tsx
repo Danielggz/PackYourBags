@@ -1,8 +1,8 @@
 import './App.css'
 import { BrowserRouter, Routes, Route } from "react-router-dom"; 
-import Login from "./components/Login/Login"; 
-import SelectActivity from "./components/SelectActivity/SelectActivity";
-import Register from "./components/Register/Register";
+import Login from "./components/Login"; 
+import SelectActivity from "./components/SelectActivity";
+import Register from "./components/Register";
 
 function App() {
   return (
