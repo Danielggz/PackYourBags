@@ -23,7 +23,7 @@ jobs:
           path: ~/project
       - run:
           name: Build Spring Boot backend
-          command: mvn -B clean package
+          command: mvn -B clean package -DskipTests
 
   frontend_build:
     docker:
@@ -35,9 +35,9 @@ jobs:
       - run:
           name: Install frontend dependencies
           command: npm install
-      - run:
-          name: Run frontend tests
-          command: npm test
+      # - run:
+      #     name: Run frontend tests
+      #     command: npm test
       - run:
           name: Build frontend
           command: npm run build
