@@ -1,0 +1,49 @@
+version: 2.1
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - backend_build:
+          filters:
+            branches:
+              only: main
+      - frontend_build:
+          filters:
+            branches:
+              only: main
+
+jobs:
+  backend_build:
+    docker:
+      - image: cimg/node:20.0
+    working_directory: ~/PackYourBags_Backend
+    steps:
+      - checkout:
+          path: ~/PackYourBags_Backend
+      - run:
+          name: Install backend dependencies
+          command: npm install
+      - run:
+          name: Run backend tests
+          command: npm test
+      - run:
+          name: Build backend
+          command: npm run build
+
+  frontend_build:
+    docker:
+      - image: cimg/node:20.0
+    working_directory: ~/project/PackYourBags_Frontend
+    steps:
+      - checkout:
+          path: ~/PackYourBags_Frontend
+      - run:
+          name: Install frontend dependencies
+          command: npm install
+      - run:
+          name: Run frontend tests
+          command: npm test
+      - run:
+          name: Build frontend
+          command: npm run build
