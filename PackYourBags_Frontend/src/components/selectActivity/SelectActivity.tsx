@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "./selectActivity.css";
+import "./SelectActivity.css";
 
 export default function SelectActivity() {
   const mapRef = useRef<L.Map | null>(null);
@@ -35,7 +35,7 @@ export default function SelectActivity() {
         }).addTo(map);
       });
   }, []);
-  
+
 
   return (
     <div>
