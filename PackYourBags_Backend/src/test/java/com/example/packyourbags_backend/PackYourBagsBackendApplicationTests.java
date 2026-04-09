@@ -6,7 +6,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @ActiveProfiles("test")
-class PackYourBagsBackendApplicationTests {
+class PackYourBagsBackendApplicationTests extends AbstractMysqlTest {
 
 	@Test
 	void contextLoads() {
