@@ -23,11 +23,11 @@ public class UserService {
         return repo.save(user);
     }
 
-    public User getUser(Long id) {
+    public User getUser(int id) {
         return repo.findById(id).orElse(null);
     }
 
-    public void deleteUser(Long id) {
+    public void deleteUser(int id) {
         repo.deleteById(id);
     }
 }
