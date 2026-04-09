@@ -15,12 +15,15 @@ workflows:
 
 jobs:
   backend_build:
-    docker:
-      - image: cimg/openjdk:17.0
+    machine:
+      image: ubuntu-2204:2023.04.2
     working_directory: ~/project/PackYourBags_Backend
     steps:
       - checkout:
           path: ~/project
+      - run:
+          name: Verify Docker
+          command: docker info
       - run:
           name: Build Spring Boot backend
           command: mvn -B clean package
