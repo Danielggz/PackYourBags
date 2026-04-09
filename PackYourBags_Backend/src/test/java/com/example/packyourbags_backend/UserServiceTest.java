@@ -1,13 +1,14 @@
-package com.example.packyourbags_backend.services;
+package com.example.packyourbags_backend;
 
-import com.example.packyourbags_backend.AbstractMysqlTest;
 import com.example.packyourbags_backend.models.entities.User;
 import com.example.packyourbags_backend.repositories.UserRepository;
+import com.example.packyourbags_backend.services.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
 class UserServiceTest extends AbstractMysqlTest {
 
     @Mock
