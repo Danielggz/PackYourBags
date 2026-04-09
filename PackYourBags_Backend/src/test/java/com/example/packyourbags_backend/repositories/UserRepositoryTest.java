@@ -1,5 +1,6 @@
 package com.example.packyourbags_backend.repositories;
 
+import com.example.packyourbags_backend.AbstractMysqlTest;
 import com.example.packyourbags_backend.models.entities.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @Testcontainers
-class UserRepositoryTest {
+class UserRepositoryTest extends AbstractMysqlTest {
 
     @Container
     static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")

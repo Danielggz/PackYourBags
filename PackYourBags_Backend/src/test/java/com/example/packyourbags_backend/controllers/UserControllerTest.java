@@ -1,5 +1,6 @@
 package com.example.packyourbags_backend.controllers;
 
+import com.example.packyourbags_backend.AbstractMysqlTest;
 import com.example.packyourbags_backend.models.entities.User;
 import com.example.packyourbags_backend.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class UserControllerIntegrationTest {
+class UserControllerIntegrationTest extends AbstractMysqlTest {
 
     @Autowired
     private MockMvc mockMvc;

@@ -1,5 +1,6 @@
 package com.example.packyourbags_backend.services;
 
+import com.example.packyourbags_backend.AbstractMysqlTest;
 import com.example.packyourbags_backend.models.entities.User;
 import com.example.packyourbags_backend.repositories.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class UserServiceTest {
+class UserServiceTest extends AbstractMysqlTest {
 
     @Mock
     private UserRepository repo;
