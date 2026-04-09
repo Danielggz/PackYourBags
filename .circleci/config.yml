@@ -23,7 +23,7 @@ jobs:
           path: ~/project
       - run:
           name: Build Spring Boot backend
-          command: mvn -B clean package -DskipTests
+          command: mvn -B clean package
 
   frontend_build:
     docker:
