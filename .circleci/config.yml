@@ -25,7 +25,7 @@ jobs:
           name: Verify Docker
           command: docker info
       - run:
-          name: Build Spring Boot backend
+          name: Build and test backend
           command: mvn -B clean package
 
   frontend_build:

@@ -1,11 +1,15 @@
 package com.example.packyourbags_backend.controllers;
 
+import com.example.packyourbags_backend.dtos.LoginDto;
 import com.example.packyourbags_backend.models.entities.User;
 import com.example.packyourbags_backend.services.UserService;
 import com.example.packyourbags_backend.repositories.UserRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
@@ -43,6 +47,18 @@ public class UserController {
     public User testDatabase() {
         User u = new User("TestUser", "user", "userson", "test@example.com", "m", 171, 72.5F, "abc123.");
         return repo.save(u);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginDto request) {
+        Optional<User> user = service.login(request.getEmail(), request.getPassword());
+
+        if (user.isPresent()) {
+            return ResponseEntity.ok(user.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid email or password");
+        }
     }
 }
 

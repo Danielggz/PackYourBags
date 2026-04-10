@@ -3,20 +3,33 @@ import { useNavigate } from "react-router-dom";
 import "./Login.css"
 
 export default function Login() {
-  const [email, setEmail] = useState("user@fakemail.com");
-  const [password, setPassword] = useState("abc123.");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
 
-    // Fake login check
-    if (email === "user@fakemail.com" && password === "abc123.") {
-      navigate("/selectActivity");
-    } else {
-      alert("Invalid credentials");
+    try {
+      const res = await fetch("http://localhost:8080/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (res.ok) {
+        const user = await res.json();
+        console.log("Logged in:", user);
+        // store user in context/localStorage if needed
+      } else {
+        setError("Invalid email or password");
+      }
+    } catch (err) {
+      setError("Server error");
     }
-  };
+  }
 
   return (
     <div className="loginPage">
@@ -59,6 +72,7 @@ export default function Login() {
               <button className="btn btn-primary" type="submit">
                 Login
               </button>
+              {error && <p>{error}</p>}
             </form>
 
             <br />
