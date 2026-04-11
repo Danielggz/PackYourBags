@@ -56,6 +56,10 @@ public class User {
         this.lastname = lastname;
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public int getId() {
         return id;
     }
@@ -90,6 +94,10 @@ public class User {
 
     public void setWeight(float weight) {
         this.weight = weight;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }
 

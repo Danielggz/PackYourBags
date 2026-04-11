@@ -22,7 +22,7 @@ export default function Login() {
       if (res.ok) {
         const user = await res.json();
         console.log("Logged in:", user);
-        // store user in context/localStorage if needed
+        navigate("/selectActivity")
       } else {
         setError("Invalid email or password");
       }
