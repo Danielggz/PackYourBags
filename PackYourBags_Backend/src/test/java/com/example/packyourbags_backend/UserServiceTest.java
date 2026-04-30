@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -25,6 +26,9 @@ class UserServiceTest extends AbstractMysqlTest {
     @InjectMocks
     private UserService service;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @Test
     void getAllUsers_returnsList() {
         List<User> users = Arrays.asList(new User(), new User());
@@ -38,11 +42,15 @@ class UserServiceTest extends AbstractMysqlTest {
     @Test
     void createUser_savesUser() {
         User user = new User();
+        user.setPassword("plain");
+
+        when(passwordEncoder.encode("plain")).thenReturn("hashed");
         when(repo.save(user)).thenReturn(user);
 
         User result = service.createUser(user);
 
         assertEquals(user, result);
+        assertEquals("hashed", user.getPassword());
     }
 
     @Test
