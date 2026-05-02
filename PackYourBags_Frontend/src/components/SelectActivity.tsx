@@ -1,39 +1,44 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "./SelectActivity.css";
+import "./SelectActivity.css"
 
 export default function SelectActivity() {
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.GeoJSON | null>(null);
+  const [maxLength, setMaxLength] = useState(100);
 
   type TrailFeature = {
     type: "Feature";
-    geometry: {
-      type: string;
-      coordinates: any;
-    };
+    geometry: { type: string; coordinates: any };
     properties: {
       OBJECTID: number;
       Name?: string;
-      Length_km?: number;
+      LengthKm?: number;        // ✅ FIXED
       TrailType?: string;
       County?: string;
+      Difficulty?: string;
       [key: string]: any;
     };
   };
 
   const [activities, setActivities] = useState<TrailFeature[]>([]);
-  const [filtered, setFiltered] = useState<TrailFeature[]>([]);
-  const [selected, setSelected] = useState<TrailFeature | null>(null);
   const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<TrailFeature | null>(null);
 
+  // Filters
+  const [difficulty, setDifficulty] = useState("");
+  const [county, setCounty] = useState("");
+  const [trailType, setTrailType] = useState("");
+
+  // Load map
   useEffect(() => {
     if (mapRef.current) return;
 
     const map = L.map("map", {
       center: [53.3, -8.9],
-      zoom: 7
+      zoom: 7,
+      zoomControl: false
     });
 
     mapRef.current = map;
@@ -42,36 +47,76 @@ export default function SelectActivity() {
       maxZoom: 19
     }).addTo(map);
 
-    const url =
-      "https://services-eu1.arcgis.com/CltcWyRoZmdwaB7T/ArcGIS/rest/services/GetIrelandActiveTrailRoutes/FeatureServer/0/query?where=1%3D1&outFields=*&f=geojson";
+    setTimeout(() => {
+      const url =
+        "https://services-eu1.arcgis.com/CltcWyRoZmdwaB7T/ArcGIS/rest/services/GetIrelandActiveTrailRoutes/FeatureServer/0/query?where=1%3D1&outFields=*&f=geojson";
 
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        setActivities((data.features as TrailFeature[]) || []);
-        setFiltered((data.features as TrailFeature[]) || []);
+      fetch(url)
+        .then((res) => res.json())
+        .then((data) => {
+          const feats = (data.features as TrailFeature[]) || [];
+          setActivities(feats);
 
-        const layer = L.geoJSON(data, {
-          style: {
-            color: "green",
-            weight: 4
-          }
-        }).addTo(map);
+          const layer = L.geoJSON(data, {
+            style: { color: "green", weight: 3 }
+          }).addTo(map);
 
-        layerRef.current = layer;
-      });
+          layerRef.current = layer;
+        });
+    }, 100);
   }, []);
 
-  // Filter logic
-  useEffect(() => {
-    const s = search.toLowerCase();
-    const result = activities.filter((f) =>
-      f?.properties?.Name?.toLowerCase().includes(s)
-    );
-    setFiltered(result);
-  }, [search, activities]);
+  // Filtered activities
+  const filtered = useMemo(() => {
+    return activities.filter((a) => {
+      const nameMatch = a.properties.Name?.toLowerCase().includes(search.toLowerCase());
 
-  // Zoom to selected activity
+      const diffMatch = difficulty
+        ? a.properties.Difficulty === difficulty
+        : true;
+
+      const countyMatch = county
+        ? a.properties.County === county
+        : true;
+
+      const typeMatch = trailType
+        ? a.properties.TrailType === trailType
+        : true;
+
+      // ✅ FIXED: correct field name
+      const lengthValue = Number(a.properties.LengthKm);
+      const lengthMatch = !isNaN(lengthValue) && lengthValue <= maxLength;
+
+      return nameMatch && diffMatch && countyMatch && typeMatch && lengthMatch;
+    });
+  }, [activities, search, difficulty, county, trailType, maxLength]);
+
+  // Autocomplete suggestions
+  const suggestions = useMemo(() => {
+    if (!search) return [];
+    return filtered.slice(0, 8);
+  }, [search, filtered]);
+
+  // Redraw map when filtered changes
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    if (layerRef.current) {
+      mapRef.current.removeLayer(layerRef.current);
+    }
+
+    const featureCollection: GeoJSON.FeatureCollection = {
+      type: "FeatureCollection",
+      features: filtered as unknown as GeoJSON.Feature[]
+    };
+
+    const layer = L.geoJSON(featureCollection, {
+      style: { color: "green", weight: 3 }
+    }).addTo(mapRef.current);
+
+    layerRef.current = layer;
+  }, [filtered]);
+
   function handleSelect(activity: TrailFeature) {
     setSelected(activity);
 
@@ -86,50 +131,101 @@ export default function SelectActivity() {
   }
 
   return (
-    <div className="activity-layout">
-      {/* SIDE MENU */}
-      <div className="side-menu">
-        <h3>Activities</h3>
+    <>
+      <div className="layout">
+        <div id="map"></div>
 
-        <input
-          type="text"
-          placeholder="Search activity..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="search-input"
-        />
+        <div className="right-menu">
+          <h2>Find an Activity</h2>
 
-        <div className="activity-list">
-          {filtered.map((a) => (
-            <div
-              key={a?.properties?.OBJECTID}
-              className="activity-item"
-              onClick={() => handleSelect(a)}
-            >
-              {a?.properties?.Name || "Unnamed Activity"}
-            </div>
-          ))}
-        </div>
+          {/* SEARCH */}
+          <div className="search-box">
+            <input
+              type="text"
+              placeholder="Search by name..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ width: "100%", padding: "8px" }}
+            />
 
-        {selected && (
-          <div className="activity-details">
-            <h4>{selected?.properties?.Name}</h4>
-            <p><strong>Length:</strong> {selected?.properties?.Length_km} km</p>
-            <p><strong>Type:</strong> {selected?.properties?.TrailType}</p>
-            <p><strong>County:</strong> {selected?.properties?.County}</p>
-
-            <button className="btn btn-success" onClick={confirmActivity}>
-              Confirm Activity
-            </button>
+            {suggestions.length > 0 && (
+              <div className="autocomplete">
+                {suggestions.map((a) => (
+                  <div
+                    key={a.properties.OBJECTID}
+                    className="autocomplete-item"
+                    onClick={() => handleSelect(a)}
+                  >
+                    {a.properties.Name}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      {/* MAP */}
-      <div
-        id="map"
-        style={{ width: "100%", height: "100vh", marginLeft: "300px" }}
-      ></div>
-    </div>
+          {/* FILTERS */}
+          <div className="filter-group">
+            <label>Difficulty</label>
+            <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+              <option value="">Any</option>
+              <option value="Easy">Easy</option>
+              <option value="Moderate">Moderate</option>
+              <option value="Challenging">Challenging</option>
+              <option value="Very Challenging">Very Challenging</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label>County</label>
+            <select value={county} onChange={(e) => setCounty(e.target.value)}>
+              <option value="">Any</option>
+              {[...new Set(activities.map((a) => a.properties.County))].map((c) =>
+                c ? <option key={c}>{c}</option> : null
+              )}
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label>Trail Type</label>
+            <select value={trailType} onChange={(e) => setTrailType(e.target.value)}>
+              <option value="">Any</option>
+              {[...new Set(activities.map((a) => a.properties.TrailType))].map((t) =>
+                t ? <option key={t}>{t}</option> : null
+              )}
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label>Max Length (km): {maxLength}</label>
+            <input
+              type="range"
+              min="1"
+              max="100"
+              value={maxLength}
+              onChange={(e) => setMaxLength(Number(e.target.value))}
+              style={{ width: "100%" }}
+            />
+          </div>
+
+          {/* DETAILS */}
+          {selected && (
+            <div className="details-box">
+              <h3>{selected.properties.Name}</h3>
+              <p><strong>Length:</strong> {Number(selected.properties.LengthKm)} km</p>
+              <p><strong>Type:</strong> {selected.properties.TrailType}</p>
+              <p><strong>County:</strong> {selected.properties.County}</p>
+              <p><strong>Difficulty:</strong> {selected.properties.Difficulty}</p>
+
+              <button
+                onClick={confirmActivity}
+                style={{ marginTop: "10px", padding: "10px", width: "100%" }}
+              >
+                Confirm Activity
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
   );
 }

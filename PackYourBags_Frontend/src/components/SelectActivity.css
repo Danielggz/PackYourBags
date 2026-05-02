@@ -1,1 +1,49 @@
 @import "leaflet/dist/leaflet.css";
+
+ .layout {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+#map {
+    flex: 1;
+    height: 100%;
+}
+
+.right-menu {
+    width: 350px;
+    background: #fff;
+    border-left: 1px solid #ccc;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.autocomplete {
+    background: white;
+    border: 1px solid #ccc;
+    margin-top: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.autocomplete-item {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.autocomplete-item:hover {
+    background: #eee;
+}
+
+.filter-group {
+    margin-top: 20px;
+}
+
+.details-box {
+    margin-top: 20px;
+    padding: 10px;
+    background: #f8f8f8;
+    border: 1px solid #ccc;
+}
