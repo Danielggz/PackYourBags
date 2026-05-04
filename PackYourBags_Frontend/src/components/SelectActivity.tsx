@@ -5,16 +5,17 @@ import "./SelectActivity.css"
 
 export default function SelectActivity() {
   const mapRef = useRef<L.Map | null>(null);
-  const layerRef = useRef<L.GeoJSON | null>(null);
+  const layerRef = useRef<L.LayerGroup | null>(null);
   const [maxLength, setMaxLength] = useState(100);
 
+  //Object from API information
   type TrailFeature = {
     type: "Feature";
     geometry: { type: string; coordinates: any };
     properties: {
       OBJECTID: number;
       Name?: string;
-      LengthKm?: number;        // ✅ FIXED
+      LengthKm?: number;
       TrailType?: string;
       County?: string;
       Difficulty?: string;
@@ -22,14 +23,17 @@ export default function SelectActivity() {
     };
   };
 
+  // States
   const [activities, setActivities] = useState<TrailFeature[]>([]);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<TrailFeature | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Filters
   const [difficulty, setDifficulty] = useState("");
   const [county, setCounty] = useState("");
   const [trailType, setTrailType] = useState("");
+  const [pendingFilters, setPendingFilters] = useState(false);
 
   // Load map
   useEffect(() => {
@@ -57,11 +61,7 @@ export default function SelectActivity() {
           const feats = (data.features as TrailFeature[]) || [];
           setActivities(feats);
 
-          const layer = L.geoJSON(data, {
-            style: { color: "green", weight: 3 }
-          }).addTo(map);
-
-          layerRef.current = layer;
+          drawTrails(feats);
         });
     }, 100);
   }, []);
@@ -79,11 +79,20 @@ export default function SelectActivity() {
         ? a.properties.County === county
         : true;
 
-      const typeMatch = trailType
+        //Exclude non - walking trails
+        const excludedTrailTypes = [
+          "Road Cycling Trail",
+          "Mountain Biking Trail",
+          "Horse Riding Trail",
+          "Off Road Cycling Trail",
+          "Snorkelling Trail",
+          "Paddling Trail"
+        ];
+
+        const typeMatch = trailType
         ? a.properties.TrailType === trailType
         : true;
 
-      // ✅ FIXED: correct field name
       const lengthValue = Number(a.properties.LengthKm);
       const lengthMatch = !isNaN(lengthValue) && lengthValue <= maxLength;
 
@@ -97,25 +106,79 @@ export default function SelectActivity() {
     return filtered.slice(0, 8);
   }, [search, filtered]);
 
-  // Redraw map when filtered changes
-  useEffect(() => {
+  //Function to draw trail lines and starter
+  function drawTrails(features: TrailFeature[]) {
     if (!mapRef.current) return;
 
+    // Remove old layer
     if (layerRef.current) {
       mapRef.current.removeLayer(layerRef.current);
     }
 
-    const featureCollection: GeoJSON.FeatureCollection = {
-      type: "FeatureCollection",
-      features: filtered as unknown as GeoJSON.Feature[]
-    };
+    const group = L.layerGroup();
 
-    const layer = L.geoJSON(featureCollection, {
-      style: { color: "green", weight: 3 }
-    }).addTo(mapRef.current);
+    features.forEach((feature) => {
+      const isSelected =
+        selected?.properties.OBJECTID === feature.properties.OBJECTID;
 
-    layerRef.current = layer;
-  }, [filtered]);
+      // Draw trail line with highlight if selected
+      const line = L.geoJSON(feature, {
+        style: {
+          color: isSelected ? "blue" : "green",
+          weight: isSelected ? 5 : 3,
+          opacity: isSelected ? 1 : 0.4
+        }
+      });
+
+      // Make line clickable
+      line.on("click", () => {
+        handleSelect(feature);
+      });
+
+      line.addTo(group);
+
+      // Add start marker (LineString or MultiLineString)
+      if (feature.geometry) {
+        let start: [number, number] | null = null;
+
+        if (feature.geometry.type === "LineString") {
+          if (feature.geometry.coordinates.length > 0) {
+            start = feature.geometry.coordinates[0];
+          }
+        }
+
+        if (feature.geometry.type === "MultiLineString") {
+          const firstLine = feature.geometry.coordinates[0];
+          if (firstLine && firstLine.length > 0) {
+            start = firstLine[0];
+          }
+        }
+
+        if (start) {
+          const [lng, lat] = start;
+
+          const marker = L.circleMarker([lat, lng], {
+            radius: isSelected ? 7 : 4,
+            color: isSelected ? "blue" : "green",
+            fillColor: isSelected ? "blue" : "green",
+            fillOpacity: 1,
+            weight: isSelected ? 3 : 2
+          });
+
+          marker.on("click", () => handleSelect(feature));
+          marker.addTo(group);
+        }
+      }
+    });
+
+    group.addTo(mapRef.current);
+    layerRef.current = group;
+  }
+
+  //Change on selected trail
+  useEffect(() => {
+    drawTrails(filtered);
+  }, [selected]);
 
   function handleSelect(activity: TrailFeature) {
     setSelected(activity);
@@ -125,6 +188,38 @@ export default function SelectActivity() {
     const bounds = L.geoJSON(activity).getBounds();
     mapRef.current.fitBounds(bounds);
   }
+
+  //Apply filters button
+  useEffect(() => {
+    if (!pendingFilters) return;
+
+    // Name match
+    const exactMatch = activities.find(
+      (a) => a.properties.Name?.toLowerCase() === search.toLowerCase()
+    );
+
+    if (exactMatch) {
+      // Show only this trail
+      drawTrails([exactMatch]);
+
+      // Zoom to it
+      const bounds = L.geoJSON(exactMatch).getBounds();
+      mapRef.current?.fitBounds(bounds);
+
+      setSelected(exactMatch);
+      setPendingFilters(false);
+      return;
+    }
+
+    // Show filtered trails
+    drawTrails(filtered);
+
+    // Keep full zoom
+    setSelected(null);
+
+    setPendingFilters(false);
+  }, [pendingFilters]);
+
 
   function confirmActivity() {
     alert("Activity confirmed: " + selected?.properties?.Name);
@@ -144,17 +239,23 @@ export default function SelectActivity() {
               type="text"
               placeholder="Search by name..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setShowSuggestions(true);
+              }}
               style={{ width: "100%", padding: "8px" }}
             />
 
-            {suggestions.length > 0 && (
+            {showSuggestions && suggestions.length > 0 && (
               <div className="autocomplete">
                 {suggestions.map((a) => (
                   <div
                     key={a.properties.OBJECTID}
                     className="autocomplete-item"
-                    onClick={() => handleSelect(a)}
+                    onClick={() => {
+                      setSearch(a.properties.Name || "");
+                      setShowSuggestions(false);
+                    }}
                   >
                     {a.properties.Name}
                   </div>
@@ -189,7 +290,15 @@ export default function SelectActivity() {
             <label>Trail Type</label>
             <select value={trailType} onChange={(e) => setTrailType(e.target.value)}>
               <option value="">Any</option>
-              {[...new Set(activities.map((a) => a.properties.TrailType))].map((t) =>
+              {[...new Set(activities.map((a) => a.properties.TrailType)
+                .filter((t) => t && ![
+                  "Road Cycling Trail",
+                  "Mountain Biking Trail",
+                  "Horse Riding Trail",
+                  "Off Road Cycling Trail",
+                  "Snorkelling Trail",
+                  "Paddling Trail"
+                ].includes(t)))].map((t) =>
                 t ? <option key={t}>{t}</option> : null
               )}
             </select>
@@ -206,6 +315,10 @@ export default function SelectActivity() {
               style={{ width: "100%" }}
             />
           </div>
+
+          <button onClick={() => setPendingFilters(true)} style={{ width: "100%", padding: "10px", marginTop: "10px" }}>
+            Apply Filters
+          </button>
 
           {/* DETAILS */}
           {selected && (
