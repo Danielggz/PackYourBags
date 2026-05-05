@@ -1,23 +1,32 @@
 @import "leaflet/dist/leaflet.css";
 
- .layout {
+
+/* Set root for full screen */
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.layout {
     display: flex;
+    width: 100%;
     height: 100vh;
-    width: 100vw;
     overflow: hidden;
 }
 
 #map {
-    flex: 1;
+    width: 70%;
     height: 100%;
 }
 
 .right-menu {
-    width: 350px;
-    background: #fff;
-    border-left: 1px solid #ccc;
+    width: 30%;
     padding: 20px;
     overflow-y: auto;
+    background: #f8f8f8;
+    border-left: 1px solid #ddd;
 }
 
 .autocomplete {
@@ -37,13 +46,71 @@
     background: #eee;
 }
 
+/* Filters */
 .filter-group {
-    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid #ddd;   /* semi-thick separator */
+    padding: 12px 0;
+    margin-bottom: 10px;
 }
 
+/* Labels aligned left, consistent width */
+.filter-group label {
+    width: 130px;        /* adjust as needed */
+    font-weight: 600;
+}
+
+/* Inputs and selects same width */
+.filter-group select,
+.filter-group input[type="range"],
+.filter-group input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+
+/* Selected trail box selection */
 .details-box {
     margin-top: 20px;
     padding: 10px;
     background: #f8f8f8;
     border: 1px solid #ccc;
 }
+
+/* Loading */
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  font-size: 1.4rem;
+  color: #333;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 6px solid #ddd;
+  border-top-color: #4a90e2;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+

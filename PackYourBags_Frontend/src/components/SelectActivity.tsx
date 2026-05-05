@@ -28,6 +28,7 @@ export default function SelectActivity() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<TrailFeature | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Filters
   const [difficulty, setDifficulty] = useState("");
@@ -62,6 +63,7 @@ export default function SelectActivity() {
           setActivities(feats);
 
           drawTrails(feats);
+          setLoading(false);
         });
     }, 100);
   }, []);
@@ -78,16 +80,6 @@ export default function SelectActivity() {
       const countyMatch = county
         ? a.properties.County === county
         : true;
-
-        //Exclude non - walking trails
-        const excludedTrailTypes = [
-          "Road Cycling Trail",
-          "Mountain Biking Trail",
-          "Horse Riding Trail",
-          "Off Road Cycling Trail",
-          "Snorkelling Trail",
-          "Paddling Trail"
-        ];
 
         const typeMatch = trailType
         ? a.properties.TrailType === trailType
@@ -227,6 +219,12 @@ export default function SelectActivity() {
 
   return (
     <>
+      {loading && (
+        <div className="loading-overlay">
+          <div className="spinner"></div>
+          <p>Loading trails…</p>
+        </div>
+      )}
       <div className="layout">
         <div id="map"></div>
 
