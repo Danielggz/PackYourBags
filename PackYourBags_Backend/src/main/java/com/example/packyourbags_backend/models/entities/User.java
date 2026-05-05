@@ -16,17 +16,19 @@ public class User {
     private String email;
     private String password;
     private String gender;
+    private String county;
     private int height;
     private float weight;
 
     public User() {}
 
-    public User(String username, String name, String lastname, String email, String gender, int height, float weight, String password) {
+    public User(String username, String name, String lastname, String email, String gender, String county, int height, float weight, String password) {
         this.username = username;
         this.name = name;
         this.lastname = lastname;
         this.email = email;
         this.gender = gender;
+        this.county = county;
         this.height = height;
         this.weight = weight;
         this.password = password;
@@ -58,6 +60,10 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getcounty() {
+        return county;
     }
 
     public int getId() {
@@ -98,6 +104,10 @@ public class User {
 
     public String getPassword() {
         return password;
+    }
+
+    public void setcounty(String county) {
+        this.county = county;
     }
 }
 

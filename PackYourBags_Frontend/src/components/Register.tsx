@@ -12,6 +12,7 @@ export default function Register() {
     lastname: "",
     email: "",
     gender: "male",
+    county: "",
     height: "",
     weight: ""
   });
@@ -119,6 +120,15 @@ export default function Register() {
           <option value="male">Male</option>
           <option value="female">Female</option>
         </select>
+
+        <input
+          type="text"
+          name="county"
+          placeholder="County"
+          value={values.county}
+          onChange={handleChange}
+          required
+        />
 
         <input
           type="number"

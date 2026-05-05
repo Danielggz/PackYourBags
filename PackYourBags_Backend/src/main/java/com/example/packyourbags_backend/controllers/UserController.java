@@ -45,7 +45,7 @@ public class UserController {
 
     @PostMapping("/test")
     public User testDatabase() {
-        User u = new User("TestUser", "user", "userson", "test@example.com", "m", 171, 72.5F, "abc123.");
+        User u = new User("TestUser", "user", "userson", "test@example.com", "m", "Wiclow", 171, 72.5F, "abc123.");
         return repo.save(u);
     }
 

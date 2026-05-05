@@ -28,7 +28,7 @@ class UserControllerIntegrationTest extends AbstractMysqlTest {
     @BeforeEach
     void setup() {
         repo.deleteAll();
-        repo.save(new User("JD", "John", "Doe", "john@example.com", "m", 180, 75.0F, "pass123"));
+        repo.save(new User("JD", "John", "Doe", "john@example.com", "m", "somewhere", 180, 75.0F, "pass123"));
     }
 
     @Test

@@ -37,7 +37,7 @@ class UserRepositoryTest extends AbstractMysqlTest {
 
     @Test
     void saveAndFindUser() {
-        User user = new User("JD", "John", "Doe", "john@example.com", "m", 180, 75.0F, "pass123");
+        User user = new User("JD", "John", "Doe", "john@example.com", "m", "somewhere", 180, 75.0F, "pass123");
         User saved = repo.save(user);
 
         User found = repo.findById(saved.getId()).orElse(null);
