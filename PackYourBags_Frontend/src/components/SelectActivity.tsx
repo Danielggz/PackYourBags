@@ -15,10 +15,15 @@ export default function SelectActivity() {
     properties: {
       OBJECTID: number;
       Name?: string;
-      LengthKm?: number;
-      TrailType?: string;
       County?: string;
+      Activity?: string;
+      Description?: string;
       Difficulty?: string;
+      LengthKm?: number;
+      TimeToComplete?: number;
+      AscentMetres?: number;
+      ExternalLiks?: string;
+      Website?: string;
       [key: string]: any;
     };
   };
@@ -191,10 +196,10 @@ export default function SelectActivity() {
     );
 
     if (exactMatch) {
-      // Show only this trail
+      //Draw the required trail
       drawTrails([exactMatch]);
 
-      // Zoom to it
+      // Zoom into trail
       const bounds = L.geoJSON(exactMatch).getBounds();
       mapRef.current?.fitBounds(bounds);
 
@@ -213,8 +218,33 @@ export default function SelectActivity() {
   }, [pendingFilters]);
 
 
-  function confirmActivity() {
-    alert("Activity confirmed: " + selected?.properties?.Name);
+  async function saveTrail(selectedTrail: TrailFeature, userId: number) {
+    
+    //Build object for sending to backend
+    const trailPayload = {
+      name: selectedTrail.properties.Name,
+      county: selectedTrail.properties.County,
+      activityType: selectedTrail.properties.Activity,
+      description: selectedTrail.properties.Description,
+      difficulty: selectedTrail.properties.Difficulty,
+      lengthKm: selectedTrail.properties.LengthKm,
+      completionTime: selectedTrail.properties.TimeToComplete,
+      ascentMetres: selectedTrail.properties.AscentMetres,
+      links: selectedTrail.properties.ExternalLiks,
+      website: selectedTrail.properties.Website
+    };
+
+    const res = await fetch(`http://localhost:8080/api/trails/${userId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(trailPayload)
+    });
+
+    if (res.ok) {
+      console.log("Trail saved!");
+    } else {
+      console.error("Error saving trail");
+    }
   }
 
   return (
@@ -321,14 +351,16 @@ export default function SelectActivity() {
           {/* DETAILS */}
           {selected && (
             <div className="details-box">
-              <h3>{selected.properties.Name}</h3>
+              <h3>{selected.properties.Name} | {selected.properties.Activity} </h3>
               <p><strong>Length:</strong> {Number(selected.properties.LengthKm)} km</p>
               <p><strong>Type:</strong> {selected.properties.TrailType}</p>
               <p><strong>County:</strong> {selected.properties.County}</p>
               <p><strong>Difficulty:</strong> {selected.properties.Difficulty}</p>
+              <p><strong>Ascent(m):</strong> {selected.properties.AscentMetres}</p>
+              <p><strong>Completion(h):</strong> {selected.properties.TimeToComplete}</p>
 
               <button
-                onClick={confirmActivity}
+                onClick={saveTrail}
                 style={{ marginTop: "10px", padding: "10px", width: "100%" }}
               >
                 Confirm Activity

@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import "./Login.css"
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("test@gmail.com"); //default email
+  const [password, setPassword] = useState("Abc123."); //default password
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -42,37 +42,15 @@ export default function Login() {
           <div className="container title">
             <form className="form" id="formLogin" onSubmit={handleSubmit}>
               <div>
-                <input
-                  className="form-control"
-                  id="inputEmail"
-                  type="text"
-                  value={email}
-                  name="email"
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+                <input className="form-control" id="inputEmail" type="text" value={email} name="email" onChange={(e) => setEmail(e.target.value)} required/>
               </div>
-
               <br />
-
               <div>
-                <input
-                  className="form-control"
-                  id="inputPwd"
-                  type="password"
-                  value={password}
-                  name="pwd"
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <input className="form-control" id="inputPwd" type="password" value={password} name="pwd" onChange={(e) => setPassword(e.target.value)} required />
               </div>
-
               <br />
-
-              <button className="btn btn-primary" type="submit">
-                Login
-              </button>
-              {error && <p>{error}</p>}
+              <button className="btn btn-primary" type="submit"> Login </button>
+              {error && (<div className="alert alert-danger mt-3" role="alert"> {error}</div>)}
             </form>
 
             <br />

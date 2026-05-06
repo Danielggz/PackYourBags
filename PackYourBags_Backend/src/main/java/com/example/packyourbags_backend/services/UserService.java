@@ -2,7 +2,6 @@ package com.example.packyourbags_backend.services;
 
 import com.example.packyourbags_backend.models.entities.User;
 import com.example.packyourbags_backend.repositories.UserRepository;
-import com.example.packyourbags_backend.config.SecurityConfig;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
