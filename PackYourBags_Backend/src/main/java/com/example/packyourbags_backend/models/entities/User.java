@@ -62,7 +62,7 @@ public class User {
         this.password = password;
     }
 
-    public String getcounty() {
+    public String getCounty() {
         return county;
     }
 
@@ -106,7 +106,7 @@ public class User {
         return password;
     }
 
-    public void setcounty(String county) {
+    public void setCounty(String county) {
         this.county = county;
     }
 }

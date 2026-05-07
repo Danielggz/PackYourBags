@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./SelectActivity.css"
@@ -7,13 +8,14 @@ export default function SelectActivity() {
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
   const [maxLength, setMaxLength] = useState(100);
+  const navigate = useNavigate();
 
   //Object from API information
   type TrailFeature = {
     type: "Feature";
     geometry: { type: string; coordinates: any };
     properties: {
-      OBJECTID: number;
+      TrailID: number;
       Name?: string;
       County?: string;
       Activity?: string;
@@ -35,7 +37,6 @@ export default function SelectActivity() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>("");
-  const [showDatePrompt, setShowDatePrompt] = useState(false);
 
   // Filters
   const [difficulty, setDifficulty] = useState("");
@@ -217,6 +218,7 @@ export default function SelectActivity() {
   async function saveTrail(selectedTrail: TrailFeature) {
     //Build object for sending to backend
     const trailData = {
+      trailId: selectedTrail.properties.TrailID,
       name: selectedTrail.properties.Name,
       county: selectedTrail.properties.County,
       activityType: selectedTrail.properties.Activity,
@@ -228,7 +230,8 @@ export default function SelectActivity() {
       SI_website: selectedTrail.properties.Website,
       links: selectedTrail.properties.ExternalLinks,
       //Get planned date from state
-      plannedActivityDate: selectedDate
+      plannedActivityDate: selectedDate,
+      activity: "Main"
     };
 
     console.log(trailData);
@@ -241,16 +244,32 @@ export default function SelectActivity() {
     });
 
     if (res.ok) {
-      console.log("Trail saved!");
+      console.log("Main Trail saved!");
     } else {
       console.error("Error saving trail");
     }
+
   }
 
   //Function to check if value is a number or not (api data clean)
   function toNumberOrNull(value: any): number | null {
     const num = Number(value);
     return isNaN(num) ? null : num;
+  }
+
+  async function generateTrainingPlan(trailId: number, plannedDate: string){
+    //Function to call backend to generate training plans based on the main selected
+    const res = await fetch("http://localhost:8080/api/trails/generatePlan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ trailId, plannedDate })
+    });
+
+    if (res.ok) {
+      // Move to main menu
+      navigate("/MainMenu");
+    }
   }
 
   return (
@@ -372,7 +391,18 @@ export default function SelectActivity() {
                 </div>
                 <div className="modal-footer">
                   <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                  <button type="button" className="btn btn-success" disabled={!selectedDate || !selectedTrail} onClick={() => selectedTrail && saveTrail(selectedTrail)} data-bs-dismiss="modal">Confirm</button>
+                  <button type="button" className="btn btn-success" disabled={!selectedDate || !selectedTrail} onClick=
+                  {async () => {
+                    if (!selectedTrail) return;
+                    try {
+                      //Save the main trail and generate the plan
+                      await saveTrail(selectedTrail);
+                      await generateTrainingPlan(selectedTrail.properties.TrailID, selectedDate);
+                    } catch (e) {
+                      console.error(e);
+                    }
+                  }}
+                  data-bs-dismiss="modal">Confirm</button>
                 </div>
               </div>
             </div>

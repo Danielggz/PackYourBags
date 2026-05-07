@@ -12,11 +12,12 @@ public class Trail {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    //User info
+    //User full information using idUser join
     @ManyToOne
     @JoinColumn(name = "idUser", nullable = false)
     private User user;
 
+    private Integer trailId;
     private String name;
     private String county;
     @Column(name = "activityType") //Force Hibernate to respect camelCase
@@ -36,8 +37,9 @@ public class Trail {
 
     public Trail() {}
 
-    public Trail(Integer id, String name, String county, String activityType, String description, String difficulty, Integer lengthKm, String completionTime, Integer ascentMetres, String links, String SI_website, LocalDate plannedActivityDate) {
+    public Trail(Integer id, Integer trailId, String name, String county, String activityType, String description, String difficulty, Integer lengthKm, String completionTime, Integer ascentMetres, String links, String SI_website, LocalDate plannedActivityDate) {
         this.id = id;
+        this.trailId = trailId;
         this.name = name;
         this.county = county;
         this.activityType = activityType;
@@ -145,5 +147,13 @@ public class Trail {
 
     public void setPlannedActivityDate(LocalDate plannedActivityDate) {
         this.plannedActivityDate = plannedActivityDate;
+    }
+
+    public Integer getTrailId() {
+        return trailId;
+    }
+
+    public void setTrailId(Integer trailId) {
+        this.trailId = trailId;
     }
 }

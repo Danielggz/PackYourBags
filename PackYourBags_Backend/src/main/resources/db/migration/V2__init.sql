@@ -1,6 +1,7 @@
 CREATE TABLE trails (
     id INT AUTO_INCREMENT PRIMARY KEY,
     idUser INT NOT NULL,
+    idTrail INT NOT NULL,
     name VARCHAR(255) NOT NULL,
     county VARCHAR(255),
     activityType VARCHAR(255),
@@ -12,6 +13,7 @@ CREATE TABLE trails (
     SI_website VARCHAR(255), /*SI->Sports Ireland*/
     links TEXT,
     plannedActivityDate DATE,
+    trailType VARCHAR(50),
    CONSTRAINT fk_trail_user
        FOREIGN KEY (idUser)
         REFERENCES users(id)
