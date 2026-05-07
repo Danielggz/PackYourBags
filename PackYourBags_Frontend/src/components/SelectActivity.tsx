@@ -34,6 +34,8 @@ export default function SelectActivity() {
   const [selectedTrail, setSelectedTrail] = useState<TrailFeature | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [showDatePrompt, setShowDatePrompt] = useState(false);
 
   // Filters
   const [difficulty, setDifficulty] = useState("");
@@ -79,19 +81,15 @@ export default function SelectActivity() {
   const filtered = useMemo(() => {
     return activities.filter((a) => {
       const nameMatch = a.properties.Name?.toLowerCase().includes(search.toLowerCase());
-
       const diffMatch = difficulty
         ? a.properties.Difficulty === difficulty
         : true;
-
       const countyMatch = county
         ? a.properties.County === county
         : true;
-
         const typeMatch = trailType
         ? a.properties.TrailType === trailType
         : true;
-
       const lengthValue = Number(a.properties.LengthKm);
       const lengthMatch = !isNaN(lengthValue) && lengthValue <= maxLength;
 
@@ -99,7 +97,7 @@ export default function SelectActivity() {
     });
   }, [activities, search, difficulty, county, trailType, maxLength]);
 
-  // Autocomplete suggestions
+  // Autocomplete suggestions at select
   const suggestions = useMemo(() => {
     if (!search) return [];
     return filtered.slice(0, 8);
@@ -179,11 +177,12 @@ export default function SelectActivity() {
     drawTrails(filtered);
   }, [selectedTrail]);
 
+  //Function to set a selected trail and focus on map
   function handleSelect(activity: TrailFeature) {
     setSelectedTrail(activity);
-
+    //Check if map exists
     if (!mapRef.current) return;
-
+    //Focus on trail
     const bounds = L.geoJSON(activity).getBounds();
     mapRef.current.fitBounds(bounds);
   }
@@ -191,20 +190,16 @@ export default function SelectActivity() {
   //Apply filters button
   useEffect(() => {
     if (!pendingFilters) return;
-
     // Name match
     const exactMatch = activities.find(
       (a) => a.properties.Name?.toLowerCase() === search.toLowerCase()
     );
-
     if (exactMatch) {
       //Draw the required trail
       drawTrails([exactMatch]);
-
       // Zoom into trail
       const bounds = L.geoJSON(exactMatch).getBounds();
       mapRef.current?.fitBounds(bounds);
-
       setSelectedTrail(exactMatch);
       setPendingFilters(false);
       return;
@@ -219,9 +214,7 @@ export default function SelectActivity() {
     setPendingFilters(false);
   }, [pendingFilters]);
 
-
   async function saveTrail(selectedTrail: TrailFeature) {
-    
     //Build object for sending to backend
     const trailData = {
       name: selectedTrail.properties.Name,
@@ -229,11 +222,13 @@ export default function SelectActivity() {
       activityType: selectedTrail.properties.Activity,
       description: selectedTrail.properties.Description,
       difficulty: selectedTrail.properties.Difficulty,
-      lengthKm: selectedTrail.properties.LengthKm,
+      lengthKm: toNumberOrNull(selectedTrail.properties.LengthKm), //Clean in case is string
       completionTime: selectedTrail.properties.TimeToComplete,
-      ascentMetres: selectedTrail.properties.AscentMetres,
+      ascentMetres: toNumberOrNull(selectedTrail.properties.AscentMetres), //Clean in case is string
       SI_website: selectedTrail.properties.Website,
-      links: selectedTrail.properties.ExternalLinks
+      links: selectedTrail.properties.ExternalLinks,
+      //Get planned date from state
+      plannedActivityDate: selectedDate
     };
 
     console.log(trailData);
@@ -250,6 +245,12 @@ export default function SelectActivity() {
     } else {
       console.error("Error saving trail");
     }
+  }
+
+  //Function to check if value is a number or not (api data clean)
+  function toNumberOrNull(value: any): number | null {
+    const num = Number(value);
+    return isNaN(num) ? null : num;
   }
 
   return (
@@ -351,11 +352,32 @@ export default function SelectActivity() {
               <p><strong>Ascent(m):</strong> {selectedTrail.properties.AscentMetres}</p>
               <p><strong>Completion(h):</strong> {selectedTrail.properties.TimeToComplete}</p>
 
-              <button onClick={()=>{ saveTrail(selectedTrail)}} style={{ marginTop: "10px", padding: "10px", width: "100%" }}>
+              {/* Button to show modal */}
+              <button className="btn btn-primary w-100 mt-3" data-bs-toggle="modal" data-bs-target="#confirmDateModal" >
                 Confirm Activity
               </button>
             </div>
           )}
+
+          {/* CONFIRM DATE MODAL */}
+          <div className="modal fade" id="confirmDateModal" tabIndex={-1} aria-labelledby="confirmDateModalLabel" aria-hidden="true">
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title" id="confirmDateModalLabel">Select a date for this activity</h5>
+                  <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div className="modal-body">
+                  <input type="date" className="form-control" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                  <button type="button" className="btn btn-success" disabled={!selectedDate || !selectedTrail} onClick={() => selectedTrail && saveTrail(selectedTrail)} data-bs-dismiss="modal">Confirm</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </>

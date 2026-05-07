@@ -2,6 +2,8 @@ package com.example.packyourbags_backend.models.entities;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "trails")
 public class Trail {
@@ -29,10 +31,12 @@ public class Trail {
     private Integer ascentMetres;
     private String links;
     private String SI_website;
+    @Column(name = "plannedActivityDate")
+    private LocalDate plannedActivityDate;
 
     public Trail() {}
 
-    public Trail(Integer id, String name, String county, String activityType, String description, String difficulty, Integer lengthKm, String completionTime, Integer ascentMetres, String links, String SI_website) {
+    public Trail(Integer id, String name, String county, String activityType, String description, String difficulty, Integer lengthKm, String completionTime, Integer ascentMetres, String links, String SI_website, LocalDate plannedActivityDate) {
         this.id = id;
         this.name = name;
         this.county = county;
@@ -44,6 +48,7 @@ public class Trail {
         this.ascentMetres = ascentMetres;
         this.links = links;
         this.SI_website = SI_website;
+        this.plannedActivityDate = plannedActivityDate;
     }
 
     //USER getter and setter
@@ -132,5 +137,13 @@ public class Trail {
 
     public void setSI_website(String SI_website) {
         this.SI_website = SI_website;
+    }
+
+    public LocalDate getPlannedActivityDate() {
+        return plannedActivityDate;
+    }
+
+    public void setPlannedActivityDate(LocalDate plannedActivityDate) {
+        this.plannedActivityDate = plannedActivityDate;
     }
 }
