@@ -17,18 +17,22 @@ public class Trail {
 
     private String name;
     private String county;
+    @Column(name = "activityType") //Force Hibernate to respect camelCase
     private String activityType;
     private String description;
     private String difficulty;
+    @Column(name = "lengthKm")
     private Integer lengthKm;
-    private Integer completionTime;
+    @Column(name = "completionTime")
+    private String completionTime;
+    @Column(name = "ascentMetres")
     private Integer ascentMetres;
     private String links;
-    private String website;
+    private String SI_website;
 
     public Trail() {}
 
-    public Trail(Integer id, String name, String county, String activityType, String description, String difficulty, Integer lengthKm, Integer completionTime, Integer ascentMetres, String links, String website) {
+    public Trail(Integer id, String name, String county, String activityType, String description, String difficulty, Integer lengthKm, String completionTime, Integer ascentMetres, String links, String SI_website) {
         this.id = id;
         this.name = name;
         this.county = county;
@@ -39,16 +43,13 @@ public class Trail {
         this.completionTime = completionTime;
         this.ascentMetres = ascentMetres;
         this.links = links;
-        this.website = website;
+        this.SI_website = SI_website;
     }
 
     //USER getter and setter
-
-
     public User getUser() {
         return user;
     }
-
     public void setUser(User user) {
         this.user = user;
     }
@@ -109,11 +110,11 @@ public class Trail {
         this.ascentMetres = ascentMetres;
     }
 
-    public Integer getCompletionTime() {
+    public String getCompletionTime() {
         return completionTime;
     }
 
-    public void setCompletionTime(Integer completionTime) {
+    public void setCompletionTime(String completionTime) {
         this.completionTime = completionTime;
     }
 
@@ -125,11 +126,11 @@ public class Trail {
         this.links = links;
     }
 
-    public String getWebsite() {
-        return website;
+    public String getSI_website() {
+        return SI_website;
     }
 
-    public void setWebsite(String website) {
-        this.website = website;
+    public void setSI_website(String SI_website) {
+        this.SI_website = SI_website;
     }
 }

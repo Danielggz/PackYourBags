@@ -4,13 +4,13 @@ CREATE TABLE trails (
    name VARCHAR(255) NOT NULL,
    county VARCHAR(255),
    activityType VARCHAR(255),
-   description VARCHAR(255),
+   description TEXT,
    difficulty VARCHAR(255),
    lengthKm INT,
-   completionTime INT,
+   completionTime VARCHAR(100),
    ascentMetres INT,
-   SI_website VARCHAR(255),
-   links VARCHAR(255),
+   SI_website VARCHAR(255), /*SI->Sports Ireland*/
+   links TEXT,
    CONSTRAINT fk_trail_user
        FOREIGN KEY (idUser)
         REFERENCES users(id)

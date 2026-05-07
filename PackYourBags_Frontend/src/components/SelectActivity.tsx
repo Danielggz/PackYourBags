@@ -20,9 +20,9 @@ export default function SelectActivity() {
       Description?: string;
       Difficulty?: string;
       LengthKm?: number;
-      TimeToComplete?: number;
+      TimeToComplete?: string;
       AscentMetres?: number;
-      ExternalLiks?: string;
+      ExternalLinks?: string;
       Website?: string;
       [key: string]: any;
     };
@@ -31,7 +31,7 @@ export default function SelectActivity() {
   // States
   const [activities, setActivities] = useState<TrailFeature[]>([]);
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<TrailFeature | null>(null);
+  const [selectedTrail, setSelectedTrail] = useState<TrailFeature | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -64,10 +64,12 @@ export default function SelectActivity() {
       fetch(url)
         .then((res) => res.json())
         .then((data) => {
-          const feats = (data.features as TrailFeature[]) || [];
-          setActivities(feats);
+          //Save all trails in object
+          const allTrails = (data.features as TrailFeature[]) || [];
+          setActivities(allTrails);
 
-          drawTrails(feats);
+          //Send data to draw the trails into the map
+          drawTrails(allTrails);
           setLoading(false);
         });
     }, 100);
@@ -116,7 +118,7 @@ export default function SelectActivity() {
 
     features.forEach((feature) => {
       const isSelected =
-        selected?.properties.OBJECTID === feature.properties.OBJECTID;
+        selectedTrail?.properties.OBJECTID === feature.properties.OBJECTID;
 
       // Draw trail line with highlight if selected
       const line = L.geoJSON(feature, {
@@ -175,10 +177,10 @@ export default function SelectActivity() {
   //Change on selected trail
   useEffect(() => {
     drawTrails(filtered);
-  }, [selected]);
+  }, [selectedTrail]);
 
   function handleSelect(activity: TrailFeature) {
-    setSelected(activity);
+    setSelectedTrail(activity);
 
     if (!mapRef.current) return;
 
@@ -203,7 +205,7 @@ export default function SelectActivity() {
       const bounds = L.geoJSON(exactMatch).getBounds();
       mapRef.current?.fitBounds(bounds);
 
-      setSelected(exactMatch);
+      setSelectedTrail(exactMatch);
       setPendingFilters(false);
       return;
     }
@@ -212,16 +214,16 @@ export default function SelectActivity() {
     drawTrails(filtered);
 
     // Keep full zoom
-    setSelected(null);
+    setSelectedTrail(null);
 
     setPendingFilters(false);
   }, [pendingFilters]);
 
 
-  async function saveTrail(selectedTrail: TrailFeature, userId: number) {
+  async function saveTrail(selectedTrail: TrailFeature) {
     
     //Build object for sending to backend
-    const trailPayload = {
+    const trailData = {
       name: selectedTrail.properties.Name,
       county: selectedTrail.properties.County,
       activityType: selectedTrail.properties.Activity,
@@ -230,14 +232,17 @@ export default function SelectActivity() {
       lengthKm: selectedTrail.properties.LengthKm,
       completionTime: selectedTrail.properties.TimeToComplete,
       ascentMetres: selectedTrail.properties.AscentMetres,
-      links: selectedTrail.properties.ExternalLiks,
-      website: selectedTrail.properties.Website
+      SI_website: selectedTrail.properties.Website,
+      links: selectedTrail.properties.ExternalLinks
     };
 
-    const res = await fetch(`http://localhost:8080/api/trails/${userId}`, {
+    console.log(trailData);
+
+    const res = await fetch(`http://localhost:8080/api/trails/saveTrail`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(trailPayload)
+      credentials: "include",
+      body: JSON.stringify(trailData)
     });
 
     if (res.ok) {
@@ -263,10 +268,7 @@ export default function SelectActivity() {
 
           {/* SEARCH */}
           <div className="search-box">
-            <input
-              type="text"
-              placeholder="Search by name..."
-              value={search}
+            <input type="text" placeholder="Search by name..." value={search} 
               onChange={(e) => {
                 setSearch(e.target.value);
                 setShowSuggestions(true);
@@ -277,14 +279,11 @@ export default function SelectActivity() {
             {showSuggestions && suggestions.length > 0 && (
               <div className="autocomplete">
                 {suggestions.map((a) => (
-                  <div
-                    key={a.properties.OBJECTID}
-                    className="autocomplete-item"
+                  <div key={a.properties.OBJECTID} className="autocomplete-item"
                     onClick={() => {
                       setSearch(a.properties.Name || "");
                       setShowSuggestions(false);
-                    }}
-                  >
+                    }}>
                     {a.properties.Name}
                   </div>
                 ))}
@@ -334,14 +333,7 @@ export default function SelectActivity() {
 
           <div className="filter-group">
             <label>Max Length (km): {maxLength}</label>
-            <input
-              type="range"
-              min="1"
-              max="100"
-              value={maxLength}
-              onChange={(e) => setMaxLength(Number(e.target.value))}
-              style={{ width: "100%" }}
-            />
+            <input type="range" min="1" max="100" value={maxLength} onChange={(e) => setMaxLength(Number(e.target.value))} style={{ width: "100%" }}/>
           </div>
 
           <button onClick={() => setPendingFilters(true)} style={{ width: "100%", padding: "10px", marginTop: "10px" }}>
@@ -349,20 +341,17 @@ export default function SelectActivity() {
           </button>
 
           {/* DETAILS */}
-          {selected && (
+          {selectedTrail && (
             <div className="details-box">
-              <h3>{selected.properties.Name} | {selected.properties.Activity} </h3>
-              <p><strong>Length:</strong> {Number(selected.properties.LengthKm)} km</p>
-              <p><strong>Type:</strong> {selected.properties.TrailType}</p>
-              <p><strong>County:</strong> {selected.properties.County}</p>
-              <p><strong>Difficulty:</strong> {selected.properties.Difficulty}</p>
-              <p><strong>Ascent(m):</strong> {selected.properties.AscentMetres}</p>
-              <p><strong>Completion(h):</strong> {selected.properties.TimeToComplete}</p>
+              <h3>{selectedTrail.properties.Name} | {selectedTrail.properties.Activity} </h3>
+              <p><strong>Length:</strong> {Number(selectedTrail.properties.LengthKm)} km</p>
+              <p><strong>Type:</strong> {selectedTrail.properties.TrailType}</p>
+              <p><strong>County:</strong> {selectedTrail.properties.County}</p>
+              <p><strong>Difficulty:</strong> {selectedTrail.properties.Difficulty}</p>
+              <p><strong>Ascent(m):</strong> {selectedTrail.properties.AscentMetres}</p>
+              <p><strong>Completion(h):</strong> {selectedTrail.properties.TimeToComplete}</p>
 
-              <button
-                onClick={saveTrail}
-                style={{ marginTop: "10px", padding: "10px", width: "100%" }}
-              >
+              <button onClick={()=>{ saveTrail(selectedTrail)}} style={{ marginTop: "10px", padding: "10px", width: "100%" }}>
                 Confirm Activity
               </button>
             </div>

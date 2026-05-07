@@ -13,13 +13,16 @@ export default function Login() {
     setError("");
 
     try {
+      //Connect with backend
       const res = await fetch("http://localhost:8080/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", //Session
         body: JSON.stringify({ email, password })
       });
 
       if (res.ok) {
+        //Store response in user
         const user = await res.json();
         console.log("Logged in:", user);
         navigate("/selectActivity")
