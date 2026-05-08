@@ -17,7 +17,7 @@ public class Trail {
     @JoinColumn(name = "idUser", nullable = false)
     private User user;
 
-    private Integer trailId;
+    private Integer idTrail;
     private String name;
     private String county;
     @Column(name = "activityType") //Force Hibernate to respect camelCase
@@ -37,9 +37,9 @@ public class Trail {
 
     public Trail() {}
 
-    public Trail(Integer id, Integer trailId, String name, String county, String activityType, String description, String difficulty, Integer lengthKm, String completionTime, Integer ascentMetres, String links, String SI_website, LocalDate plannedActivityDate) {
+    public Trail(Integer id, Integer idTrail, String name, String county, String activityType, String description, String difficulty, Integer lengthKm, String completionTime, Integer ascentMetres, String links, String SI_website, LocalDate plannedActivityDate) {
         this.id = id;
-        this.trailId = trailId;
+        this.idTrail = idTrail;
         this.name = name;
         this.county = county;
         this.activityType = activityType;
@@ -59,6 +59,14 @@ public class Trail {
     }
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -149,11 +157,11 @@ public class Trail {
         this.plannedActivityDate = plannedActivityDate;
     }
 
-    public Integer getTrailId() {
-        return trailId;
+    public Integer getIdTrail() {
+        return idTrail;
     }
 
-    public void setTrailId(Integer trailId) {
-        this.trailId = trailId;
+    public void setIdTrail(Integer trailId) {
+        this.idTrail = trailId;
     }
 }

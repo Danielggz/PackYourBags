@@ -29,15 +29,18 @@ public class TrailController {
     }
 
     @PostMapping("/saveTrail")
-    public Trail saveTrail(@RequestBody Trail trail, HttpSession session) {
+    public ResponseEntity<Trail> saveTrail(@RequestBody Trail trail, HttpSession session) {
 
         //Get session id
         Integer userId = (Integer) session.getAttribute("userId");
         if(userId == null) {
             throw new RuntimeException("User is not logged in");
         }
-
-        return trailService.saveTrail(userId, trail);
+        Trail saved = trailService.saveTrail(userId, trail);
+        if (saved == null) {
+            return ResponseEntity.status(500).build(); // unexpected failure
+        }
+        return ResponseEntity.ok(saved);
     }
 
     @PostMapping("/generatePlan")

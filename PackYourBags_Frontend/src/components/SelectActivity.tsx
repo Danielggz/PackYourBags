@@ -4,13 +4,7 @@ import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./SelectActivity.css"
 
-export default function SelectActivity() {
-  const mapRef = useRef<L.Map | null>(null);
-  const layerRef = useRef<L.LayerGroup | null>(null);
-  const [maxLength, setMaxLength] = useState(100);
-  const navigate = useNavigate();
-
-  //Object from API information
+//Object from API information
   type TrailFeature = {
     type: "Feature";
     geometry: { type: string; coordinates: any };
@@ -29,6 +23,15 @@ export default function SelectActivity() {
       [key: string]: any;
     };
   };
+
+//Global variable for trail api info
+let GLOBAL_TRAILS: TrailFeature[] = [];
+
+export default function SelectActivity() {
+  const mapRef = useRef<L.Map | null>(null);
+  const layerRef = useRef<L.LayerGroup | null>(null);
+  const [maxLength, setMaxLength] = useState(100);
+  const navigate = useNavigate();
 
   // States
   const [activities, setActivities] = useState<TrailFeature[]>([]);
@@ -67,8 +70,21 @@ export default function SelectActivity() {
       fetch(url)
         .then((res) => res.json())
         .then((data) => {
-          //Save all trails in object
-          const allTrails = (data.features as TrailFeature[]) || [];
+          //Save all trails in object and filter by TrailId rather than OBJECTID
+          const allTrails = data.features.map((f: any) => {
+            const p = f.properties;
+
+            return {
+              ...f,
+              properties: {
+                ...p,
+                TrailID: Number(p.TrailID ?? p.trailid ?? p.TRAILID ?? p.TrailId),
+              }
+            };
+          });
+
+          GLOBAL_TRAILS = allTrails; //Store all trails at global variable
+
           setActivities(allTrails);
 
           //Send data to draw the trails into the map
@@ -117,7 +133,7 @@ export default function SelectActivity() {
 
     features.forEach((feature) => {
       const isSelected =
-        selectedTrail?.properties.OBJECTID === feature.properties.OBJECTID;
+        selectedTrail?.properties.TrailID === feature.properties.TrailID;
 
       // Draw trail line with highlight if selected
       const line = L.geoJSON(feature, {
@@ -217,8 +233,10 @@ export default function SelectActivity() {
 
   async function saveTrail(selectedTrail: TrailFeature) {
     //Build object for sending to backend
+    console.log("SELECTED TRAIL WHEN SAVING");
+    console.log(selectedTrail);
     const trailData = {
-      trailId: selectedTrail.properties.TrailID,
+      idTrail: selectedTrail.properties.TrailID,
       name: selectedTrail.properties.Name,
       county: selectedTrail.properties.County,
       activityType: selectedTrail.properties.Activity,
@@ -244,7 +262,10 @@ export default function SelectActivity() {
     });
 
     if (res.ok) {
-      console.log("Main Trail saved!");
+      //Store newly created main trail
+      const savedTrail = await res.json();
+      //Generate new plan based on the main trail selected
+      generateTrainingPlan(savedTrail.id, savedTrail.plannedActivityDate)
     } else {
       console.error("Error saving trail");
     }
@@ -259,17 +280,47 @@ export default function SelectActivity() {
 
   async function generateTrainingPlan(trailId: number, plannedDate: string){
     //Function to call backend to generate training plans based on the main selected
-    const res = await fetch("http://localhost:8080/api/trails/generatePlan", {
+
+    console.log("Trail id: " + trailId);
+    const mainTrail = activities.find(t => t.properties.TrailID === trailId);
+    if (!mainTrail) return;
+
+    // Filter by county
+    const candidates = GLOBAL_TRAILS
+      .filter(t => t.properties.County === mainTrail.properties.County)
+      .filter(t => t.properties.LengthKm! < mainTrail.properties.LengthKm!)
+      .sort((a, b) => a.properties.LengthKm! - b.properties.LengthKm!);
+
+    console.log(candidates);
+
+    // Apply 80/70/60% rules
+    const caps = [0.80, 0.70, 0.60];
+    const selected: TrailFeature[] = [];
+
+    for (let i = 0; i < caps.length; i++) {
+      const maxKm = mainTrail.properties.LengthKm! * caps[i];
+
+      const pick = candidates
+        .filter(t => t.properties.LengthKm! <= maxKm)
+        .sort((a, b) => b.properties.LengthKm! - a.properties.LengthKm!)[0];
+
+      if (pick) {
+        selected.push(pick);
+        candidates.splice(candidates.indexOf(pick), 1);
+      }
+    }
+
+    // Send all training trails to backend in ONE call
+    await fetch("http://localhost:8080/api/trails/saveTrainingTrails", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ trailId, plannedDate })
+      body: JSON.stringify({
+        mainTrailId: trailId,
+        plannedDate,
+        trainingTrails: selected
+      })
     });
-
-    if (res.ok) {
-      // Move to main menu
-      navigate("/MainMenu");
-    }
   }
 
   return (
@@ -397,7 +448,6 @@ export default function SelectActivity() {
                     try {
                       //Save the main trail and generate the plan
                       await saveTrail(selectedTrail);
-                      await generateTrainingPlan(selectedTrail.properties.TrailID, selectedDate);
                     } catch (e) {
                       console.error(e);
                     }

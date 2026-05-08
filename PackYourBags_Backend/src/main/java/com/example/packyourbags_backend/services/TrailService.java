@@ -35,29 +35,35 @@ public class TrailService {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        //Assign user to the trail
         trail.setUser(user);
         return trailRepo.save(trail);
     }
 
-    public void generateTrainingPlan(Integer trailId, LocalDate plannedDate) {
+    public void generateTrainingPlan(Integer idTrail, LocalDate plannedDate) {
 
         // Load main trail from db
-        Trail main = trailRepository.findById(trailId).orElseThrow(() -> new RuntimeException("Trail not found"));
+        Trail main = trailRepository.findById(idTrail).orElseThrow(() -> new RuntimeException("Trail not found"));
         // Load user from main trail
         User user = main.getUser();
         String county = user.getCounty();
-
         // Compute up to 3 weekends before the event
         List<LocalDate> weekends = computeUpcomingWeekends(plannedDate);
 
-        /*
         // Select suitable training trails
-        List<Trail> candidates = trailRepository.findByCounty(county)
+        List<Trail> candidates = trailRepository.findByCounty(main.getCounty())
                 .stream()
-                .filter(t -> isSuitableTrainingTrail(t, main))
-                .sorted(Comparator.comparing(Trail::getDifficulty))
+                // exclude main trail
+                .filter(t -> !t.getId().equals(main.getId()))
+                // must be shorter than main
+                .filter(t -> t.getLengthKm() < main.getLengthKm())
+                // sort by length
+                .sorted(Comparator.comparing(Trail::getLengthKm))
                 .toList();
 
+        List<Trail> assigned = new ArrayList<>();
+        System.out.println("CANDIDATES" + candidates);
+        /*
         // Assign trails to weekends
         for (int i = 0; i < weekends.size() && i < candidates.size(); i++) {
             Trail training = cloneAsTraining(candidates.get(i), weekends.get(i), user.getId());
@@ -67,7 +73,7 @@ public class TrailService {
         // Mark main trail
         main.setActivity("Main");
         trailRepository.save(main);
-        */
+         */
     }
     //Get the remaining weekends based on date to prepare trainings
     private List<LocalDate> computeUpcomingWeekends(LocalDate targetDate) {
