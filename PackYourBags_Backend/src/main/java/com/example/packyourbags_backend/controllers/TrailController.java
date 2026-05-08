@@ -43,9 +43,5 @@ public class TrailController {
         return ResponseEntity.ok(saved);
     }
 
-    @PostMapping("/generatePlan")
-    public ResponseEntity<?> generatePlan(@RequestBody GeneratePlanRequest req) {
-        trailService.generateTrainingPlan(req.getTrailId(), req.getPlannedDate());
-        return ResponseEntity.ok().build();
-    }
+
 }

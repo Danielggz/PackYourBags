@@ -65,7 +65,7 @@ export default function SelectActivity() {
 
     setTimeout(() => {
       const url =
-        "https://services-eu1.arcgis.com/CltcWyRoZmdwaB7T/ArcGIS/rest/services/GetIrelandActiveTrailRoutes/FeatureServer/0/query?where=1%3D1&outFields=*&f=geojson";
+        "https://services-eu1.arcgis.com/CltcWyRoZmdwaB7T/ArcGIS/rest/services/GetIrelandActiveTrailRoutes/FeatureServer/0/query?where=TrailActivity='Walking'&outFields=*&f=geojson";
 
       fetch(url)
         .then((res) => res.json())
@@ -73,7 +73,6 @@ export default function SelectActivity() {
           //Save all trails in object and filter by TrailId rather than OBJECTID
           const allTrails = data.features.map((f: any) => {
             const p = f.properties;
-
             return {
               ...f,
               properties: {
@@ -146,7 +145,7 @@ export default function SelectActivity() {
 
       // Make line clickable
       line.on("click", () => {
-        handleSelect(feature);
+        focusTrail(feature);
       });
 
       line.addTo(group);
@@ -179,7 +178,7 @@ export default function SelectActivity() {
             weight: isSelected ? 3 : 2
           });
 
-          marker.on("click", () => handleSelect(feature));
+          marker.on("click", () => focusTrail(feature));
           marker.addTo(group);
         }
       }
@@ -195,7 +194,7 @@ export default function SelectActivity() {
   }, [selectedTrail]);
 
   //Function to set a selected trail and focus on map
-  function handleSelect(activity: TrailFeature) {
+  function focusTrail(activity: TrailFeature) {
     setSelectedTrail(activity);
     //Check if map exists
     if (!mapRef.current) return;
@@ -233,8 +232,6 @@ export default function SelectActivity() {
 
   async function saveTrail(selectedTrail: TrailFeature) {
     //Build object for sending to backend
-    console.log("SELECTED TRAIL WHEN SAVING");
-    console.log(selectedTrail);
     const trailData = {
       idTrail: selectedTrail.properties.TrailID,
       name: selectedTrail.properties.Name,
@@ -252,8 +249,6 @@ export default function SelectActivity() {
       activity: "Main"
     };
 
-    console.log(trailData);
-
     const res = await fetch(`http://localhost:8080/api/trails/saveTrail`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -265,7 +260,7 @@ export default function SelectActivity() {
       //Store newly created main trail
       const savedTrail = await res.json();
       //Generate new plan based on the main trail selected
-      generateTrainingPlan(savedTrail.id, savedTrail.plannedActivityDate)
+      generateTrainingPlan(savedTrail.idTrail, savedTrail.plannedActivityDate)
     } else {
       console.error("Error saving trail");
     }
@@ -281,23 +276,25 @@ export default function SelectActivity() {
   async function generateTrainingPlan(trailId: number, plannedDate: string){
     //Function to call backend to generate training plans based on the main selected
 
-    console.log("Trail id: " + trailId);
     const mainTrail = activities.find(t => t.properties.TrailID === trailId);
     if (!mainTrail) return;
 
-    // Filter by county
+    // Filter by county (wait for response from backend)
+    const userCounty = await getCurrentUserCounty();
+
     const candidates = GLOBAL_TRAILS
-      .filter(t => t.properties.County === mainTrail.properties.County)
+      .filter(t => t.properties.County == userCounty)
       .filter(t => t.properties.LengthKm! < mainTrail.properties.LengthKm!)
       .sort((a, b) => a.properties.LengthKm! - b.properties.LengthKm!);
 
     console.log(candidates);
 
+    const weekendDates = computeUpcomingWeekends(plannedDate);
+
     // Apply 80/70/60% rules
     const caps = [0.80, 0.70, 0.60];
-    const selected: TrailFeature[] = [];
-
-    for (let i = 0; i < caps.length; i++) {
+    const selectedTrainings: TrailFeature[] = [];
+    for (let i = 0; i < weekendDates.length; i++) {
       const maxKm = mainTrail.properties.LengthKm! * caps[i];
 
       const pick = candidates
@@ -305,22 +302,56 @@ export default function SelectActivity() {
         .sort((a, b) => b.properties.LengthKm! - a.properties.LengthKm!)[0];
 
       if (pick) {
-        selected.push(pick);
+        selectedTrainings.push(pick);
         candidates.splice(candidates.indexOf(pick), 1);
       }
     }
 
-    // Send all training trails to backend in ONE call
-    await fetch("http://localhost:8080/api/trails/saveTrainingTrails", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        mainTrailId: trailId,
-        plannedDate,
-        trainingTrails: selected
-      })
-    });
+    console.log(selectedTrainings);
+    console.log(weekendDates);
+
+    // Send all training trails to backend in a call
+    // await fetch("http://localhost:8080/api/trails/saveTrainingTrails", {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   credentials: "include",
+    //   body: JSON.stringify({
+    //     mainTrailId: trailId,
+    //     plannedDate,
+    //     trainingTrails: selectedTrainings,
+    //     trainingDates: weekendDates
+    //   })
+    // });
+  }
+
+  function computeUpcomingWeekends(targetDateStr: string): string[] {
+    const weekends: string[] = [];
+    const targetDate = new Date(targetDateStr);
+    let cur = new Date(); // today
+    const maxDays = 3;
+
+    while (cur < targetDate && weekends.length < maxDays) {
+      if (cur.getDay() === 6) { // Saturday = 6
+        weekends.push(cur.toISOString().split("T")[0]);
+      }
+      cur.setDate(cur.getDate() + 1);
+    }
+
+    return weekends;
+  }
+
+  async function getCurrentUserCounty() {
+    //Gets the user in session and returns its county
+    try {
+      const res = await fetch("http://localhost:8080/api/users/getUserData", {
+        credentials: "include"
+      });
+      const data = await res.json();
+      return data.county;
+    } catch (err) {
+      console.error("Failed to load user info", err);
+      return null;
+    }
   }
 
   return (

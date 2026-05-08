@@ -1,6 +1,7 @@
 package com.example.packyourbags_backend.controllers;
 
 import com.example.packyourbags_backend.dtos.LoginDto;
+import com.example.packyourbags_backend.dtos.UserDto;
 import com.example.packyourbags_backend.models.entities.User;
 import com.example.packyourbags_backend.services.UserService;
 import com.example.packyourbags_backend.repositories.UserRepository;
@@ -75,6 +76,20 @@ public class UserController {
             return ResponseEntity.status(401).body("Not logged in");
         }
         return ResponseEntity.ok("Logged in");
+    }
+
+    //Get user basic data
+    @GetMapping("/getUserData")
+    public ResponseEntity<UserDto> getCurrentUser(HttpSession session) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(401).build();
+        }
+        //User basic data using a dto
+        User user = service.getUser(userId);
+        UserDto dto = new UserDto(user.getId(), user.getName(), user.getCounty());
+
+        return ResponseEntity.ok(dto);
     }
 }
 
