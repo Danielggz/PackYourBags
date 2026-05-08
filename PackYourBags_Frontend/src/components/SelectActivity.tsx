@@ -232,22 +232,7 @@ export default function SelectActivity() {
 
   async function saveTrail(selectedTrail: TrailFeature) {
     //Build object for sending to backend
-    const trailData = {
-      idTrail: selectedTrail.properties.TrailID,
-      name: selectedTrail.properties.Name,
-      county: selectedTrail.properties.County,
-      activityType: selectedTrail.properties.Activity,
-      description: selectedTrail.properties.Description,
-      difficulty: selectedTrail.properties.Difficulty,
-      lengthKm: toNumberOrNull(selectedTrail.properties.LengthKm), //Clean in case is string
-      completionTime: selectedTrail.properties.TimeToComplete,
-      ascentMetres: toNumberOrNull(selectedTrail.properties.AscentMetres), //Clean in case is string
-      SI_website: selectedTrail.properties.Website,
-      links: selectedTrail.properties.ExternalLinks,
-      //Get planned date from state
-      plannedActivityDate: selectedDate,
-      activity: "Main"
-    };
+    const trailData = formatTrailData(selectedTrail, "Main");
 
     const res = await fetch(`http://localhost:8080/api/trails/saveTrail`, {
       method: "POST",
@@ -265,12 +250,6 @@ export default function SelectActivity() {
       console.error("Error saving trail");
     }
 
-  }
-
-  //Function to check if value is a number or not (api data clean)
-  function toNumberOrNull(value: any): number | null {
-    const num = Number(value);
-    return isNaN(num) ? null : num;
   }
 
   async function generateTrainingPlan(trailId: number, plannedDate: string){
@@ -293,7 +272,8 @@ export default function SelectActivity() {
 
     // Apply 80/70/60% rules
     const caps = [0.80, 0.70, 0.60];
-    const selectedTrainings: TrailFeature[] = [];
+    const selectedTrainings: any[] = []; //obj array
+
     for (let i = 0; i < weekendDates.length; i++) {
       const maxKm = mainTrail.properties.LengthKm! * caps[i];
 
@@ -302,26 +282,34 @@ export default function SelectActivity() {
         .sort((a, b) => b.properties.LengthKm! - a.properties.LengthKm!)[0];
 
       if (pick) {
-        selectedTrainings.push(pick);
+        //Format into object
+        let formattedPick = formatTrailData(pick, "Training");
+        //Add objective date to the object
+        formattedPick.plannedActivityDate = weekendDates[i];
+        selectedTrainings.push(formattedPick);
         candidates.splice(candidates.indexOf(pick), 1);
       }
     }
 
-    console.log(selectedTrainings);
-    console.log(weekendDates);
+    //Send all training trails to backend in a call
+    const res = await fetch("http://localhost:8080/api/trails/saveTrainingTrails", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(selectedTrainings)
+    });
 
-    // Send all training trails to backend in a call
-    // await fetch("http://localhost:8080/api/trails/saveTrainingTrails", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   credentials: "include",
-    //   body: JSON.stringify({
-    //     mainTrailId: trailId,
-    //     plannedDate,
-    //     trainingTrails: selectedTrainings,
-    //     trainingDates: weekendDates
-    //   })
-    // });
+    if (res.ok) {
+      console.log(res);
+    } else {
+      console.error("Error saving trail");
+    }
+  }
+
+  //Function to check if value is a number or not (api data clean)
+  function toNumberOrNull(value: any): number | null {
+    const num = Number(value);
+    return isNaN(num) ? null : num;
   }
 
   function computeUpcomingWeekends(targetDateStr: string): string[] {
@@ -352,6 +340,28 @@ export default function SelectActivity() {
       console.error("Failed to load user info", err);
       return null;
     }
+  }
+
+  function formatTrailData(selectedTrail: TrailFeature, trailType: String){
+    //Method to format the data to fit database expected values
+    const trailData = {
+      idTrail: selectedTrail.properties.TrailID,
+      name: selectedTrail.properties.Name,
+      county: selectedTrail.properties.County,
+      activityType: selectedTrail.properties.Activity,
+      description: selectedTrail.properties.Description,
+      difficulty: selectedTrail.properties.Difficulty,
+      lengthKm: toNumberOrNull(selectedTrail.properties.LengthKm), //Clean in case is string
+      completionTime: selectedTrail.properties.TimeToComplete,
+      ascentMetres: toNumberOrNull(selectedTrail.properties.AscentMetres), //Clean in case is string
+      SI_website: selectedTrail.properties.Website,
+      links: selectedTrail.properties.ExternalLinks,
+      //Get planned date from state
+      plannedActivityDate: selectedDate,
+      trailType: trailType
+    };
+
+    return trailData;
   }
 
   return (

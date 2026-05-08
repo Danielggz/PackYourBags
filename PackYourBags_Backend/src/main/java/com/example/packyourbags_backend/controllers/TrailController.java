@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/trails")
 public class TrailController {
@@ -41,6 +43,18 @@ public class TrailController {
             return ResponseEntity.status(500).build(); // unexpected failure
         }
         return ResponseEntity.ok(saved);
+    }
+
+    @PostMapping("/saveTrainingTrails")
+    public ResponseEntity<?> saveTrainingTrails(@RequestBody List<Trail> trails, HttpSession session) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(401).body("User not logged in");
+        }
+        for (Trail t : trails) {
+            trailService.saveTrail(userId, t);
+        }
+        return ResponseEntity.ok("Training trails saved");
     }
 
 

@@ -34,10 +34,12 @@ public class Trail {
     private String SI_website;
     @Column(name = "plannedActivityDate")
     private LocalDate plannedActivityDate;
+    @Column(name = "trailType")
+    private String trailType;
 
     public Trail() {}
 
-    public Trail(Integer id, Integer idTrail, String name, String county, String activityType, String description, String difficulty, Integer lengthKm, String completionTime, Integer ascentMetres, String links, String SI_website, LocalDate plannedActivityDate) {
+    public Trail(Integer id, Integer idTrail, String name, String county, String activityType, String description, String difficulty, Integer lengthKm, String completionTime, Integer ascentMetres, String links, String SI_website, LocalDate plannedActivityDate, String trailType) {
         this.id = id;
         this.idTrail = idTrail;
         this.name = name;
@@ -51,6 +53,7 @@ public class Trail {
         this.links = links;
         this.SI_website = SI_website;
         this.plannedActivityDate = plannedActivityDate;
+        this.trailType = trailType;
     }
 
     //USER getter and setter
@@ -163,5 +166,13 @@ public class Trail {
 
     public void setIdTrail(Integer trailId) {
         this.idTrail = trailId;
+    }
+
+    public String getTrailType() {
+        return trailType;
+    }
+
+    public void setTrailType(String trailType) {
+        this.trailType = trailType;
     }
 }
