@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface TrailRepository extends JpaRepository<Trail, Integer>{
     //Pull db info of trails by counties
-    List<Trail> findByCounty(String county);
+    boolean existsByUserIdAndTrailType(Integer userId, String trailType);
 }

@@ -22,16 +22,28 @@ export default function Login() {
       });
 
       if (res.ok) {
-        //Store response in user
-        const user = await res.json();
-        console.log("Logged in:", user);
-        navigate("/selectActivity")
+        //If user has activity selected, goes to main menu, if not, goes to select one 
+        let hasMainTrail = await checkUserActivity();
+        console.log(hasMainTrail);
+        if (hasMainTrail) {
+          navigate("/mainMenu");
+        } else {
+          navigate("/selectActivity");
+        }
       } else {
         setError("Invalid email or password");
       }
     } catch (err) {
       setError("Server error");
     }
+  }
+
+  async function checkUserActivity(){
+    const res = await fetch("http://localhost:8080/api/trails/checkMainTrail", {
+      credentials: "include"
+    });
+    const hasMainTrail = await res.json();
+    return hasMainTrail;
   }
 
   return (

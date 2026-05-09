@@ -46,6 +46,7 @@ public class TrailController {
     }
 
     @PostMapping("/saveTrainingTrails")
+    //Save an array of trails as training trails
     public ResponseEntity<?> saveTrainingTrails(@RequestBody List<Trail> trails, HttpSession session) {
         Integer userId = (Integer) session.getAttribute("userId");
         if (userId == null) {
@@ -55,6 +56,18 @@ public class TrailController {
             trailService.saveTrail(userId, t);
         }
         return ResponseEntity.ok("Training trails saved");
+    }
+
+    @GetMapping("/checkMainTrail")
+    //Check if user already has a main trail assigned
+    public ResponseEntity<?> checkMainTrail(HttpSession session) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(401).body(false);
+        }
+
+        boolean exists = trailService.checkUserMainTrail(userId);
+        return ResponseEntity.ok(exists);
     }
 
 

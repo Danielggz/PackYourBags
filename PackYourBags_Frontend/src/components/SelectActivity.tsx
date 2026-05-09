@@ -301,6 +301,8 @@ export default function SelectActivity() {
 
     if (res.ok) {
       console.log(res);
+      //if training plans are already generated, it goes to the main menu
+      navigate("/mainMenu")
     } else {
       console.error("Error saving trail");
     }

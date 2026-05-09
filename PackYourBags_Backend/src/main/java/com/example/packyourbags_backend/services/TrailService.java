@@ -40,57 +40,8 @@ public class TrailService {
         return trailRepo.save(trail);
     }
 
-    public void generateTrainingPlan(Integer idTrail, LocalDate plannedDate) {
-
-        // Load main trail from db
-        Trail main = trailRepository.findById(idTrail).orElseThrow(() -> new RuntimeException("Trail not found"));
-        // Load user from main trail
-        User user = main.getUser();
-        String county = user.getCounty();
-        // Compute up to 3 weekends before the event
-        List<LocalDate> weekends = computeUpcomingWeekends(plannedDate);
-
-        // Select suitable training trails
-        List<Trail> candidates = trailRepository.findByCounty(main.getCounty())
-                .stream()
-                // exclude main trail
-                .filter(t -> !t.getId().equals(main.getId()))
-                // must be shorter than main
-                .filter(t -> t.getLengthKm() < main.getLengthKm())
-                // sort by length
-                .sorted(Comparator.comparing(Trail::getLengthKm))
-                .toList();
-
-        List<Trail> assigned = new ArrayList<>();
-        System.out.println("CANDIDATES" + candidates);
-        /*
-        // Assign trails to weekends
-        for (int i = 0; i < weekends.size() && i < candidates.size(); i++) {
-            Trail training = cloneAsTraining(candidates.get(i), weekends.get(i), user.getId());
-            TrailRepository.save(training);
-        }
-
-        // Mark main trail
-        main.setActivity("Main");
-        trailRepository.save(main);
-         */
-    }
-    //Get the remaining weekends based on date to prepare trainings
-    private List<LocalDate> computeUpcomingWeekends(LocalDate targetDate) {
-
-        List<LocalDate> weekendsList = new ArrayList<>();
-        LocalDate curDate = LocalDate.now();
-        int maxDays = 3; //Maximum three training activities
-
-        while (curDate.isBefore(targetDate) && weekendsList.size() < maxDays) {
-            if (curDate.getDayOfWeek() == DayOfWeek.SATURDAY) {
-                //Add one more day for training each saturday
-                weekendsList.add(curDate);
-            }
-            //Add one to counter of days
-            curDate = curDate.plusDays(1);
-        }
-        return weekendsList;
+    public boolean checkUserMainTrail(Integer userId) {
+        return trailRepository.existsByUserIdAndTrailType(userId, "Main");
     }
 }
 
