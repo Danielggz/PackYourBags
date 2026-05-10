@@ -40,7 +40,7 @@ export default function Login() {
   }
 
   async function checkUserActivity(){
-    const res = await fetch(`${API_BASE_URL}api/trails/checkMainTrail`, {
+    const res = await fetch("http://localhost:8080/api/trails/checkMainTrail", {
       credentials: "include"
     });
     const hasMainTrail = await res.json();

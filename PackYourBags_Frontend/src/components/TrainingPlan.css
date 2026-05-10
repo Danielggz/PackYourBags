@@ -1,0 +1,37 @@
+.training-plan-container {
+  padding: 20px;
+}
+
+.training-item {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  margin-bottom: 20px;
+  background: #fafafa;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+}
+
+.training-map {
+  width: 40%;
+  height: 180px;
+  border-right: 1px solid #ddd;
+}
+
+.training-info {
+  width: 60%;
+  padding: 15px;
+}
+
+.training-info h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.3rem;
+  color: #333;
+}
+
+.training-info p {
+  margin: 4px 0;
+  font-size: 0.95rem;
+  color: #444;
+}

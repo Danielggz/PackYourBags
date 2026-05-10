@@ -1,0 +1,60 @@
+/* Main container */
+.main-activity-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Map container */
+#main-map {
+  width: 100%;
+  height: 60vh;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+/* Info panel */
+.trail-info-panel {
+  padding: 20px;
+  background: #fafafa;
+  border-top: 1px solid #ddd;
+}
+
+/* Title */
+.trail-info-panel h2 {
+  margin: 0 0 10px 0;
+  font-size: 1.6rem;
+  color: #333;
+}
+
+/* Info rows */
+.trail-info-panel p {
+  margin: 6px 0;
+  font-size: 1rem;
+  color: #444;
+}
+
+/* Labels */
+.trail-info-panel strong {
+  color: #222;
+}
+
+/* Website link */
+.trail-info-panel a {
+  color: #0077cc;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.trail-info-panel a:hover {
+  text-decoration: underline;
+}
+
+/* Optional: card style */
+.trail-info-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-top: 15px;
+}
