@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./SelectActivity.css"
@@ -230,11 +231,12 @@ export default function SelectActivity() {
     setPendingFilters(false);
   }, [pendingFilters]);
 
+  //Function to send the main trail selected into the backend for saving
   async function saveTrail(selectedTrail: TrailFeature) {
     //Build object for sending to backend
     const trailData = formatTrailData(selectedTrail, "Main");
 
-    const res = await fetch(`http://localhost:8080/api/trails/saveTrail`, {
+    const res = await fetch(`${API_BASE_URL}/api/trails/saveTrail`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -252,6 +254,7 @@ export default function SelectActivity() {
 
   }
 
+  //Function to find trails based on length and assign to user as trainings
   async function generateTrainingPlan(trailId: number, plannedDate: string){
     //Function to call backend to generate training plans based on the main selected
 
@@ -292,7 +295,7 @@ export default function SelectActivity() {
     }
 
     //Send all training trails to backend in a call
-    const res = await fetch("http://localhost:8080/api/trails/saveTrainingTrails", {
+    const res = await fetch(`${API_BASE_URL}/api/trails/saveTrainingTrails`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -314,6 +317,7 @@ export default function SelectActivity() {
     return isNaN(num) ? null : num;
   }
 
+  //Function to get the remaining weekends before the main trail
   function computeUpcomingWeekends(targetDateStr: string): string[] {
     const weekends: string[] = [];
     const targetDate = new Date(targetDateStr);
@@ -333,7 +337,7 @@ export default function SelectActivity() {
   async function getCurrentUserCounty() {
     //Gets the user in session and returns its county
     try {
-      const res = await fetch("http://localhost:8080/api/users/getUserData", {
+      const res = await fetch(`${API_BASE_URL}/api/users/getUserData`, {
         credentials: "include"
       });
       const data = await res.json();

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
 import "./Login.css"
 
 export default function Login() {
@@ -14,7 +15,7 @@ export default function Login() {
 
     try {
       //Connect with backend
-      const res = await fetch("http://localhost:8080/api/users/login", {
+      const res = await fetch(`${API_BASE_URL}/api/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include", //Session
@@ -39,7 +40,7 @@ export default function Login() {
   }
 
   async function checkUserActivity(){
-    const res = await fetch("http://localhost:8080/api/trails/checkMainTrail", {
+    const res = await fetch(`${API_BASE_URL}api/trails/checkMainTrail`, {
       credentials: "include"
     });
     const hasMainTrail = await res.json();
