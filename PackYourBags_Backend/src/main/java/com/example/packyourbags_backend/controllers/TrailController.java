@@ -1,8 +1,5 @@
 package com.example.packyourbags_backend.controllers;
-import com.example.packyourbags_backend.dtos.GeneratePlanRequest;
-import com.example.packyourbags_backend.dtos.apiRequest.TrailApiResponse;
 import com.example.packyourbags_backend.models.entities.Trail;
-import com.example.packyourbags_backend.services.TrailApiService;
 import com.example.packyourbags_backend.services.TrailService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,19 +12,10 @@ import java.util.List;
 @RequestMapping("/api/trails")
 public class TrailController {
 
-    //Get DTO for api data
-    @Autowired
-    private TrailApiService TrailApiService;
-
     private final TrailService trailService;
 
     public TrailController(TrailService trailService) {
         this.trailService = trailService;
-    }
-
-    @GetMapping("/allTrails")
-    public TrailApiResponse getAllTrails() {
-        return TrailApiService.fetchAllTrails();
     }
 
     @PostMapping("/saveTrail")
@@ -70,5 +58,27 @@ public class TrailController {
         return ResponseEntity.ok(exists);
     }
 
+    @GetMapping("/getMainTrail")
+    //Get the main trail using user id
+    public ResponseEntity<?> getMainTrail(HttpSession session) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(401).body(false);
+        }
 
+        Trail mainTrail = trailService.getMainTrail(userId);
+        return ResponseEntity.ok(mainTrail);
+    }
+
+    @GetMapping("/getTrainingTrails")
+    //Get the main trail using user id
+    public ResponseEntity<?> getTrainingTrails(HttpSession session) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(401).body(false);
+        }
+
+        List<Trail> trainings = trailService.getTrainingTrails(userId);
+        return ResponseEntity.ok(trainings);
+    }
 }

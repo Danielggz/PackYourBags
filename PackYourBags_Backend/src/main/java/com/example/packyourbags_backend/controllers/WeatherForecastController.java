@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("/weather")
+@RequestMapping("/api/weather")
 public class WeatherForecastController {
     @GetMapping
     public ResponseEntity<String> getWeather(@RequestParam double lat, @RequestParam double lon) {
@@ -42,8 +42,6 @@ public class WeatherForecastController {
             if (body.startsWith("<html")) {
                 return ResponseEntity.status(403).body(null);
             }
-
-            System.out.println(body);
 
             return ResponseEntity.ok()
                     .header("Content-Type", "application/xml")

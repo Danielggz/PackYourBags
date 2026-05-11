@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "../config/api";
 
+//Normalized object for weather
 type DailyWeather = {
   date: string;
   symbol: string;
@@ -15,16 +16,19 @@ export function WeatherForecast() {
   useEffect(() => {
     async function loadWeather() {
       try {
-        const url = `${API_BASE_URL}/weather?lat=53.3498&lon=-6.2603`;
+        //Call backend to retrieve api
+        const url = `${API_BASE_URL}/api/weather?lat=53.3498&lon=-6.2603`;
 
+        //Receive response in xml format
         const res = await fetch(url);
         const xml = await res.text();
-
         const parser = new DOMParser();
         const doc = parser.parseFromString(xml, "text/xml");
 
+        //Forecast divided in times
         const times = Array.from(doc.getElementsByTagName("time"));
 
+        //Set records into daily averages
         const dailyMap: Record<
           string,
           {
@@ -36,29 +40,27 @@ export function WeatherForecast() {
         > = {};
 
         times.forEach((t) => {
-          const from = t.getAttribute("from") || "";
-          const date = from.split("T")[0];
+            //Separate time fractions
+            const from = t.getAttribute("from") || "";
+            const date = from.split("T")[0];
+            const tempAttr = t.querySelector("temperature")?.getAttribute("value");
+            const temp = tempAttr ? Number(tempAttr) : null; //If exists, add it
+            const symbol = t.querySelector("symbol")?.getAttribute("id") || null;
+            const windAttr = t.querySelector("windSpeed")?.getAttribute("mps");
+            const wind = windAttr ? Number(windAttr) : null;
 
-          const tempAttr = t.querySelector("temperature")?.getAttribute("value");
-          const temp = tempAttr ? Number(tempAttr) : null;
-
-          const symbol = t.querySelector("symbol")?.getAttribute("id") || null;
-
-          const windAttr = t.querySelector("windSpeed")?.getAttribute("mps");
-          const wind = windAttr ? Number(windAttr) : null;
-
-          if (!dailyMap[date]) {
+            if (!dailyMap[date]) {
             dailyMap[date] = {
-              date,
-              temps: [],
-              symbols: [],
-              winds: [],
+                date,
+                temps: [],
+                symbols: [],
+                winds: [],
             };
-          }
+        }
 
-          if (temp !== null) dailyMap[date].temps.push(temp);
-          if (symbol !== null) dailyMap[date].symbols.push(symbol);
-          if (wind !== null) dailyMap[date].winds.push(wind);
+            if (temp !== null) dailyMap[date].temps.push(temp);
+            if (symbol !== null) dailyMap[date].symbols.push(symbol);
+            if (wind !== null) dailyMap[date].winds.push(wind);
         });
 
         const dailyForecast: DailyWeather[] = Object.values(dailyMap).map((d) => {
@@ -97,8 +99,6 @@ export function WeatherForecast() {
 
     loadWeather();
   }, []);
-
-  console.log(forecast);
 
   return forecast;
 }
