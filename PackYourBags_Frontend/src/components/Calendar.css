@@ -80,3 +80,21 @@
     font-size: 12px;
     overflow-y: auto;
 }
+
+.weather-icon {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+.calendar-cell-header {
+  position: relative;
+  font-weight: bold;
+}
+
+.weather-icon-img {
+  width: 24px;
+  height: 24px;
+}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "./MainMenu.css";
 
 import Calendar from "./Calendar";

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./MainActivity.css"
-import { API_BASE_URL } from "../config/api";
+// import { API_BASE_URL } from "../config/api";
 
 type TrailFeature = {
   type: "Feature";
@@ -28,7 +28,6 @@ export default function MainActivity() {
   const layerRef = useRef<L.LayerGroup | null>(null);
 
   const [trail, setTrail] = useState<TrailFeature | null>(null);
-  const TRAIL_ID = 111; // test ID
 
   // Load map once
   useEffect(() => {
