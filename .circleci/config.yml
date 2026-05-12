@@ -40,7 +40,7 @@ jobs:
           command: npm install
       - run:
            name: Run frontend tests
-           command: CI=true npm test -- --run
+           command: CI=true npm test
       - run:
           name: Build frontend
           command: npm run build
