@@ -40,7 +40,7 @@ jobs:
           command: npm install
       - run:
            name: Run frontend tests
-           command: npm test
+           command: npm test -- --pool=threads --threads=false
       - run:
           name: Build frontend
           command: npm run build
