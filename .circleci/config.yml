@@ -30,7 +30,7 @@ jobs:
 
   frontend_build:
     docker:
-      - image: cimg/node:22.0
+      - image: cimg/node:20.0
     working_directory: ~/project/PackYourBags_Frontend
     steps:
       - checkout:
@@ -40,7 +40,7 @@ jobs:
           command: npm install
       - run:
            name: Run frontend tests
-           command: npm test
+           command: npm test -- --environment=jsdom
       - run:
           name: Build frontend
           command: npm run build
