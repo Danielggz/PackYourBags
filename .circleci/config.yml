@@ -30,7 +30,7 @@ jobs:
 
   frontend_build:
     docker:
-      - image: cimg/node:21.0
+      - image: cimg/node:20.0
     working_directory: ~/project/PackYourBags_Frontend
     steps:
       - checkout:
