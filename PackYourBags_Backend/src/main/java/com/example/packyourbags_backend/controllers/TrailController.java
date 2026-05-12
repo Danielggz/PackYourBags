@@ -81,4 +81,16 @@ public class TrailController {
         List<Trail> trainings = trailService.getTrainingTrails(userId);
         return ResponseEntity.ok(trainings);
     }
+
+    @GetMapping("/getAllTrails")
+    //Get the main trail using user id
+    public ResponseEntity<?> getAllTrails(HttpSession session) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(401).body(false);
+        }
+
+        List<Trail> allTrails = trailService.getAllTrails(userId);
+        return ResponseEntity.ok(allTrails);
+    }
 }

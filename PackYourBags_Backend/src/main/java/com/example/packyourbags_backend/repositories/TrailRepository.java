@@ -11,4 +11,5 @@ public interface TrailRepository extends JpaRepository<Trail, Integer>{
     boolean existsByUserIdAndTrailType(Integer userId, String trailType);
     Optional<Trail> findByUserIdAndTrailType(Integer userId, String trailType);
     List<Trail> findAllByUserIdAndTrailType(Integer userId, String trailType);
+    List<Trail> findAllByUserId(Integer userId);
 }

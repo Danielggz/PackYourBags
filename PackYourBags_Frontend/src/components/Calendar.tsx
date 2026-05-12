@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Calendar.css";
 import { WeatherForecast } from "../utils/WeatherForecast";
+import { API_BASE_URL } from "../config/api";
 
 import sun from "../assets/icons/sun.png";
+import drizzleSun from "../assets/icons/drizzle-sun.png"
 import cloudy from "../assets/icons/cloudy.png";
 import partialCloudy from "../assets/icons/partial-cloudy.png";
 import lightRain from "../assets/icons/light-rain.png";
@@ -13,11 +15,15 @@ import snowflake from "../assets/icons/snowflake.png";
 import thunderstorm from "../assets/icons/thunderstorm.png";
 
 
-export default function Calendar() {
+export default function Calendar({ setActiveTab }: { setActiveTab: (tab: string) => void }) {
+
+    //state for trails
+    const [activities, setActivities] = useState<any[]>([]);
 
     //Symbols for weather display
     const symbolToIcon: Record<string, string> = {
         Sun: sun,
+        DrizzleSun: drizzleSun,
         Cloud: cloudy,
         LightCloud: partialCloudy,
         PartlyCloud: partialCloudy,
@@ -30,6 +36,14 @@ export default function Calendar() {
     };
 
     const forecast = WeatherForecast();
+
+    useEffect(() => {
+        async function loadActivities() {
+            const data = await getAllActivities();
+            setActivities(data);
+        }
+        loadActivities();
+    }, []);
 
     //New date obj
     const today = new Date();
@@ -69,6 +83,32 @@ export default function Calendar() {
 
     const cells = [];
 
+    //Use trail information to generate date objects
+    const activitiesByDate: Record<string, any[]> = {};
+    activities.forEach((a) => {
+        if (!a || !a.plannedActivityDate) return;
+
+        //Format date to the right way (dd-mm-yyyy)
+        const isoDate = new Date(a.plannedActivityDate).toISOString().split("T")[0];
+
+        if (!activitiesByDate[isoDate]) {
+            activitiesByDate[isoDate] = [];
+        }
+
+        //Use trailType to check for type of training and set title
+        let title = "Activity";
+            if (a.trailType === "Main") title = "Main Trail";
+            if (a.trailType === "Training") title = "Training Trail";
+
+            // Push info object
+            activitiesByDate[isoDate].push({
+                title: title,
+                name: a.name,
+                trailType: a.trailType,
+                idTrail: a.idTrail
+            });
+    });
+
     // Empty cells before first day
     for (let i = 0; i < startDay; i++) {
         cells.push(<div key={`empty-${i}`} className="calendar-cell empty"></div>);
@@ -79,13 +119,15 @@ export default function Calendar() {
         const isPastDay = isCurrentMonth && d < today.getDate();
 
         const dateObj = new Date(year, currentMonth.getMonth(), d);
+        //Format date
+        const isoDate = dateObj.toISOString().split("T")[0];
         const weather = getWeatherForDate(dateObj);
 
         cells.push(
             <div key={d} className={`calendar-cell ${isPastDay ? "disabled" : ""}`} >
                 <div className="calendar-cell-header">
                     {d}
-
+                    {/* Add symbols for weather */}
                     {weather && (
                         <div className="weather-icon">
                             <img src={symbolToIcon[weather.symbol] || "?"} alt={weather.symbol} className="weather-icon-img" />
@@ -93,14 +135,19 @@ export default function Calendar() {
                     )}
                 </div>
 
-                <div className="calendar-cell-body"></div>
+                <div className="calendar-cell-body">
+                    {/* Add Trail activity */}
+                    {activitiesByDate[isoDate] &&
+                        activitiesByDate[isoDate].map((act, idx) => (
+                            <div key={idx} className="activity-box" onClick={() => goToActivity(act)} >
+                                <div className="activity-title">{act.title}</div>
+                                <div className="activity-name">{act.name}</div>
+                            </div>
+                        ))
+                    }
+                </div>
             </div>
         );
-    }
-
-    function getWeatherForDate(date: Date) {
-        const d = date.toISOString().split("T")[0];
-        return forecast.find((f) => f.date === d);
     }
 
     return (
@@ -119,4 +166,29 @@ export default function Calendar() {
             </div>
         </div>
     );
+
+    function getWeatherForDate(date: Date) {
+        const d = date.toISOString().split("T")[0];
+        return forecast.find((f) => f.date === d);
+    }
+
+    //Call backend to retrieve user's activities
+    async function getAllActivities(){
+        const res = await fetch(`${API_BASE_URL}/api/trails/getAllTrails`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include"
+        });
+        return await res.json();
+    }
+
+    //Redirect to locations
+    function goToActivity(act: any) {
+        console.log("here!");
+        if (act.trailType === "Main") {
+            setActiveTab("main");
+        } else if (act.trailType === "Training") {
+            setActiveTab("trainings");
+        }
+    }
 }

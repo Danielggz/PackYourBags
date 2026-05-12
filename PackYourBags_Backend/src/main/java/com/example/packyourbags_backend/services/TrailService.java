@@ -43,6 +43,10 @@ public class TrailService {
         return trailRepository.findAllByUserIdAndTrailType(userId, "Training");
     }
 
+    public List<Trail> getAllTrails(Integer userId) {
+        return trailRepository.findAllByUserId(userId);
+    }
+
     public boolean checkUserMainTrail(Integer userId) {
         return trailRepository.existsByUserIdAndTrailType(userId, "Main");
     }

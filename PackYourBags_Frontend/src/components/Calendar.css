@@ -6,7 +6,7 @@
     box-sizing: border-box;
 }
 
-/* HEADER */
+/* header */
 .calendar-header {
     display: flex;
     justify-content: space-between;
@@ -35,7 +35,7 @@
     cursor: default;
 }
 
-/* GRID */
+/* grid */
 .calendar-grid {
     flex: 1;
     display: grid;
@@ -45,7 +45,7 @@
     padding-top: 10px;
 }
 
-/* DAY LABELS */
+/* Day label */
 .calendar-day-label {
     text-align: center;
     font-weight: 600;
@@ -54,7 +54,7 @@
     background: #fafafa;
 }
 
-/* CELLS */
+/* Cells */
 .calendar-cell {
     border: 1px solid #e0e0e0;
     border-radius: 4px;
@@ -95,6 +95,33 @@
 }
 
 .weather-icon-img {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
+}
+
+/* Trail info */
+.activity-box {
+    display: block;
+    background-color: #e3f2fd;
+    border: 1px solid #90caf9;
+    border-radius: 6px;
+    padding: 4px 6px;
+    margin-top: 4px;
+    text-decoration: none;   /* hyperlink invisible */
+    color: #0d47a1;
+    cursor: pointer;
+}
+
+.activity-box:hover {
+    background-color: #bbdefb;
+}
+
+.activity-title {
+    font-weight: bold;
+    font-size: 0.75rem;
+    margin-bottom: 3px;
+}
+
+.activity-name {
+    font-size: 0.7rem;
 }
