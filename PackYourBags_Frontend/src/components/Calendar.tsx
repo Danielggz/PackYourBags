@@ -36,7 +36,9 @@ export default function Calendar({ setActiveTab }: { setActiveTab: (tab: string)
         Thunderstorm: thunderstorm,
     };
 
-    const forecast = WeatherForecast();
+    let lat = 53.3498;
+    let lon = -6.2603;
+    const forecast = WeatherForecast({lat, lon});
 
     useEffect(() => {
         async function loadActivities() {

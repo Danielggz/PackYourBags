@@ -10,14 +10,14 @@ type DailyWeather = {
   wind: number;
 };
 
-export function WeatherForecast() {
+export function WeatherForecast({ lat, lon }: { lat: number; lon: number }) {
   const [forecast, setForecast] = useState<DailyWeather[]>([]);
 
   useEffect(() => {
     async function loadWeather() {
       try {
         //Call backend to retrieve api
-        const url = `${API_BASE_URL}/api/weather?lat=53.3498&lon=-6.2603`;
+        const url = `${API_BASE_URL}/api/weather?lat=${lat}&lon=${lon}`;
 
         //Receive response in xml format
         const res = await fetch(url);
