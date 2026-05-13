@@ -4,7 +4,6 @@ import com.example.packyourbags_backend.models.entities.Trail;
 import com.example.packyourbags_backend.models.entities.User;
 import com.example.packyourbags_backend.repositories.TrailRepository;
 import com.example.packyourbags_backend.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,27 +11,21 @@ import java.util.List;
 @Service
 public class TrailService {
 
-    private final TrailRepository trailRepo;
-    private final UserRepository userRepo;
+    private final TrailRepository trailRepository;
+    private final UserRepository userRepository;
 
-    //Repositories for database info retrieval
-    @Autowired
-    private TrailRepository trailRepository;
-    @Autowired
-    private UserRepository userRepository;
-
+    // Constructor injection (clean + testable)
     public TrailService(TrailRepository trailRepository, UserRepository userRepository) {
-        this.trailRepo = trailRepository;
-        this.userRepo = userRepository;
+        this.trailRepository = trailRepository;
+        this.userRepository = userRepository;
     }
 
     public Trail saveTrail(Integer userId, Trail trail) {
-        User user = userRepo.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        //Assign user to the trail
         trail.setUser(user);
-        return trailRepo.save(trail);
+        return trailRepository.save(trail);
     }
 
     public Trail getMainTrail(Integer userId) {
@@ -51,4 +44,3 @@ public class TrailService {
         return trailRepository.existsByUserIdAndTrailType(userId, "Main");
     }
 }
-

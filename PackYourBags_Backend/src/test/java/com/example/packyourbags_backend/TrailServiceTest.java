@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@ExtendWith(MockitoExtension.class)
 class TrailServiceTest {
 
     @Mock
@@ -44,7 +45,7 @@ class TrailServiceTest {
         Trail result = service.saveTrail(1, trail);
 
         assertEquals(user, result.getUser());
-        verify(trailRepo, times(1)).save(trail);
+        verify(trailRepo).save(trail);
     }
 
     @Test
