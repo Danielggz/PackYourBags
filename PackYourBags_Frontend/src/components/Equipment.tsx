@@ -46,6 +46,9 @@ export default function Equipment() {
                         <span className="equipment-label">{item.label}</span>
                     </label>
                 ))}
+            </div><br/>
+            <div className="btnSaveEquipment">
+                <button type="button" className="btn btn-primary">Save</button>
             </div>
         </div>
     );

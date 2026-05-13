@@ -27,6 +27,7 @@ export default function Calendar({ setActiveTab }: { setActiveTab: (tab: string)
         Cloud: cloudy,
         LightCloud: partialCloudy,
         PartlyCloud: partialCloudy,
+        Drizzle: lightRain,
         LightRain: lightRain,
         Rain: rain,
         HeavyRain: heavyRain,

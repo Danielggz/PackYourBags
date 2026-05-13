@@ -39,6 +39,7 @@ export default function Login() {
     }
   }
 
+  //Check if user has a main activity selected
   async function checkUserActivity(){
     const res = await fetch("http://localhost:8080/api/trails/checkMainTrail", {
       credentials: "include"

@@ -64,6 +64,7 @@ export default function SelectActivity() {
       maxZoom: 19
     }).addTo(map);
 
+    //Call API
     setTimeout(() => {
       const url =
         "https://services-eu1.arcgis.com/CltcWyRoZmdwaB7T/ArcGIS/rest/services/GetIrelandActiveTrailRoutes/FeatureServer/0/query?where=TrailActivity='Walking'&outFields=*&f=geojson";
@@ -72,13 +73,13 @@ export default function SelectActivity() {
         .then((res) => res.json())
         .then((data) => {
           //Save all trails in object and filter by TrailId rather than OBJECTID
-          const allTrails = data.features.map((f: any) => {
-            const p = f.properties;
+          const allTrails = data.features.map((feature: any) => {
+            const trail = feature.properties;
             return {
-              ...f,
+              ...feature,
               properties: {
-                ...p,
-                TrailID: Number(p.TrailID ?? p.trailid ?? p.TRAILID ?? p.TrailId),
+                ...trail,
+                TrailID: Number(trail.TrailID ?? trail.trailid ?? trail.TRAILID ?? trail.TrailId),
               }
             };
           });

@@ -131,8 +131,11 @@ export default function MainActivity() {
 
         // Fit map to trail
         const bounds = L.geoJSON(feature).getBounds();
-        mapRef.current.fitBounds(bounds);
-    }
+        setTimeout(() => {
+            mapRef.current!.invalidateSize();
+            mapRef.current!.fitBounds(bounds, { padding: [40, 40] });
+        }, 100);
+            }
 
     //Get info from backend and return as json
     async function getTrailInfo() {

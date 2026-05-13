@@ -66,6 +66,10 @@ public class User {
         return county;
     }
 
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
     public int getId() {
         return id;
     }
