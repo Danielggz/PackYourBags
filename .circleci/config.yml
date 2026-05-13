@@ -26,7 +26,8 @@ jobs:
           command: docker info
       - run:
           name: Build and test backend
-          command: mvn -B clean package
+          #Clean output for maven tests
+          command: mvn -q -DtrimStackTrace=true clean test 
 
   frontend_build:
     docker:
