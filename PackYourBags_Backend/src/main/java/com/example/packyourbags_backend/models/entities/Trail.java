@@ -20,9 +20,7 @@ public class Trail {
     private Integer idTrail;
     private String name;
     private String county;
-    @Column(nullable = false)
     private Float lat = 0f;
-    @Column(nullable = false)
     private Float lon = 0f;
     @Column(name = "activityType") //Force Hibernate to respect camelCase
     private String activityType;
@@ -186,11 +184,11 @@ public class Trail {
         this.lat = lat;
     }
 
-    public float getLon() {
+    public Float getLon() {
         return lon;
     }
 
-    public void setLon(float lon) {
+    public void setLon(Float lon) {
         this.lon = lon;
     }
 
