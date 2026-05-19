@@ -4,6 +4,8 @@ CREATE TABLE trails (
     idTrail INT NOT NULL,
     name VARCHAR(255) NOT NULL,
     county VARCHAR(255),
+    lat FLOAT,
+    lon FLOAT,
     activityType VARCHAR(255),
     description TEXT,
     difficulty VARCHAR(255),

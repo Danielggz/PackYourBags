@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./Calendar.css";
-import { WeatherForecast } from "../utils/WeatherForecast";
+import { useWeatherForecast } from "../utils/WeatherForecast";
+import type { DailyWeather } from "../utils/WeatherForecast";
 import { API_BASE_URL } from "../config/api";
 
 import sun from "../assets/icons/sun.png";
@@ -19,6 +20,9 @@ export default function Calendar({ setActiveTab }: { setActiveTab: (tab: string)
 
     //state for trails
     const [activities, setActivities] = useState<any[]>([]);
+    //Modal
+    const [selectedWeather, setSelectedWeather] = useState<DailyWeather | null>(null);
+    const [showWeatherModal, setShowWeatherModal] = useState(false);
 
     //Symbols for weather display
     const symbolToIcon: Record<string, string> = {
@@ -36,9 +40,6 @@ export default function Calendar({ setActiveTab }: { setActiveTab: (tab: string)
         Thunderstorm: thunderstorm,
     };
 
-    let lat = 53.3498;
-    let lon = -6.2603;
-    const forecast = WeatherForecast({lat, lon});
 
     useEffect(() => {
         async function loadActivities() {
@@ -47,6 +48,17 @@ export default function Calendar({ setActiveTab }: { setActiveTab: (tab: string)
         }
         loadActivities();
     }, []);
+
+    //get main trail
+    const mainTrail = activities.find(a => a.trailType === "Main");
+
+    const lat = mainTrail?.lat;
+    const lon = mainTrail?.lon;
+
+    //Call hook with main trail coordinates
+    const forecast = useWeatherForecast(lat, lon);
+
+    console.log(forecast);
 
     //New date obj
     const today = new Date();
@@ -84,8 +96,6 @@ export default function Calendar({ setActiveTab }: { setActiveTab: (tab: string)
         currentMonth.getFullYear() === today.getFullYear() &&
         currentMonth.getMonth() === today.getMonth();
 
-    const cells = [];
-
     //Use trail information to generate date objects
     const activitiesByDate: Record<string, any[]> = {};
     activities.forEach((a) => {
@@ -112,47 +122,6 @@ export default function Calendar({ setActiveTab }: { setActiveTab: (tab: string)
             });
     });
 
-    // Empty cells before first day
-    for (let i = 0; i < startDay; i++) {
-        cells.push(<div key={`empty-${i}`} className="calendar-cell empty"></div>);
-    }
-
-    // Generate day tiles
-    for (let d = 1; d <= daysInMonth; d++) {
-        const isPastDay = isCurrentMonth && d < today.getDate();
-
-        const dateObj = new Date(year, currentMonth.getMonth(), d);
-        //Format date
-        const isoDate = dateObj.toISOString().split("T")[0];
-        const weather = getWeatherForDate(dateObj);
-
-        cells.push(
-            <div key={d} className={`calendar-cell ${isPastDay ? "disabled" : ""}`} >
-                <div className="calendar-cell-header">
-                    {d}
-                    {/* Add symbols for weather */}
-                    {weather && (
-                        <div className="weather-icon">
-                            <img src={symbolToIcon[weather.symbol] || "?"} alt={weather.symbol} className="weather-icon-img" />
-                        </div>
-                    )}
-                </div>
-
-                <div className="calendar-cell-body">
-                    {/* Add Trail activity */}
-                    {activitiesByDate[isoDate] &&
-                        activitiesByDate[isoDate].map((act, idx) => (
-                            <div key={idx} className="activity-box" onClick={() => goToActivity(act)} >
-                                <div className="activity-title">{act.title}</div>
-                                <div className="activity-name">{act.name}</div>
-                            </div>
-                        ))
-                    }
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="calendar-wrapper">
             <div className="calendar-header">
@@ -165,8 +134,91 @@ export default function Calendar({ setActiveTab }: { setActiveTab: (tab: string)
                 {["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((d) => (
                     <div key={d} className="calendar-day-label">{d}</div>
                 ))}
-                {cells}
+
+                {/* Empty cells before first day */}
+                {Array.from({ length: startDay }).map((_, i) => (
+                    <div key={`empty-${i}`} className="calendar-cell empty"></div>
+                ))}
+
+                {/* Days of the month */}
+                {Array.from({ length: daysInMonth }).map((_, i) => {
+                    const day = i + 1;
+                    const dateObj = new Date(year, currentMonth.getMonth(), day);
+                    const isoDate = dateObj.toISOString().split("T")[0];
+                    const weather = getWeatherForDate(dateObj);
+
+                    const isPastDay =
+                        isCurrentMonth && day < today.getDate();
+
+                    return (
+                        <div key={day} className={`calendar-cell ${isPastDay ? "disabled" : ""}`}>
+                            <div className="calendar-cell-header">
+                                {day}
+
+                                {weather && (
+                                    <div className="weather-icon">
+                                        <img src={symbolToIcon[weather.symbol]} alt={weather.symbol} className="weather-icon-img" style={{ cursor: "pointer" }}
+                                            onClick={() => {
+                                                setSelectedWeather(weather);
+                                                setShowWeatherModal(true);
+                                            }}/>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="calendar-cell-body">
+                                {activitiesByDate[isoDate] &&
+                                    activitiesByDate[isoDate].map((act, idx) => (
+                                        <div key={idx} className="activity-box" onClick={() => goToActivity(act)} >
+                                            <div className="activity-title">{act.title}</div>
+                                            <div className="activity-name">{act.name}</div>
+                                        </div>
+                                    ))}
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
+
+            {/* Modal */}
+            {showWeatherModal && selectedWeather && (
+            <div className="modal fade show" style={{ display: "block", background: "rgba(0,0,0,0.5)" }} onClick={() => setShowWeatherModal(false)} >
+                <div className="modal-dialog modal-lg modal-dialog-centered" onClick={(e) => e.stopPropagation()} >
+                    <div className="modal-content weather-modal">
+
+                        <div className="modal-header weather-modal-header">
+                            <h5 className="modal-title">
+                                Weather for {selectedWeather.date}
+                            </h5>
+                            <button type="button" className="btn-close" onClick={() => setShowWeatherModal(false)} ></button>
+                        </div>
+
+                        <div className="modal-body weather-modal-body">
+
+                            <div className="weather-modal-icon-wrapper">
+                                <img src={symbolToIcon[selectedWeather.symbol]} alt={selectedWeather.symbol} className="weather-modal-icon"/>
+                                <div className="weather-modal-symbol">
+                                    {selectedWeather.symbol}
+                                </div>
+                            </div>
+
+                            <div className="weather-modal-details">
+                                <p><strong>Min Temp:</strong> {selectedWeather.minTemp}°C</p>
+                                <p><strong>Max Temp:</strong> {selectedWeather.maxTemp}°C</p>
+                                <p><strong>Wind Speed:</strong> {selectedWeather.wind} km/h </p>
+                            </div>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button className="btn btn-secondary" onClick={() => setShowWeatherModal(false)} >
+                                Close
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        )}
         </div>
     );
 

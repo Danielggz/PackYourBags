@@ -19,9 +19,20 @@ type TrailFeature = {
         LengthKm?: number;
         TimeToComplete?: string;
         AscentMetres?: number;
-        ExternalLinks?: string;
         Website?: string;
-        [key: string]: any;
+        Format?: string;
+        Grade?: string;
+        TrailType?: string;
+        LocationNetwork?: string;
+        DogsAllowed?: string;
+        StartPoint?: string;
+        FinishPoint?: string;
+        WaymarkingDescription?: string;
+        OSiMaps?: string;
+        NearestTownStart?: string;
+        NearestTownFinish?: string;
+        ManagementOrganisation?: string;
+        ContactDetails?: string;
     };
 };
 
@@ -40,8 +51,9 @@ export default function MainActivity() {
             zoomControl: false
         });
         mapRef.current = map;
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            maxZoom: 19
+        L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
+            maxZoom: 17,
+            attribution: "© OpenTopoMap contributors"
         }).addTo(map);
     }, []);
 
@@ -96,11 +108,19 @@ export default function MainActivity() {
         }
         const group = L.layerGroup();
         // Draw line
+        L.geoJSON(feature, {
+            style: {
+                color: "#ffffff",
+                weight: 10,
+                opacity: 0.5
+            }
+        }).addTo(group);
         const line = L.geoJSON(feature, {
             style: {
-                color: "blue",
+                color: "#d35400",
                 weight: 5,
-                opacity: 1
+                opacity: 0.9,
+                dashArray: "6 4"
             }
         });
         line.addTo(group);
@@ -158,11 +178,24 @@ export default function MainActivity() {
                 <div className="trail-info-panel">
                     <div className="trail-info-card">
                         <h2>{trail.properties.Name}</h2>
+
                         <p><strong>County:</strong> {trail.properties.County}</p>
-                        <p><strong>Difficulty:</strong> {trail.properties.Difficulty}</p>
+                        <p><strong>Activity:</strong> {trail.properties.Activity}</p>
+                        <p><strong>Trail Type:</strong> {trail.properties.TrailType}</p>
+                        <p><strong>Format:</strong> {trail.properties.Format}</p>
+                        <p><strong>Grade:</strong> {trail.properties.Grade}</p>
                         <p><strong>Length:</strong> {trail.properties.LengthKm} km</p>
                         <p><strong>Ascent:</strong> {trail.properties.AscentMetres} m</p>
                         <p><strong>Estimated Time:</strong> {trail.properties.TimeToComplete}</p>
+                        <p><strong>Start Point:</strong> {trail.properties.StartPoint}</p>
+                        <p><strong>Finish Point:</strong> {trail.properties.FinishPoint}</p>
+                        <p><strong>Nearest Town (Start):</strong> {trail.properties.NearestTownStart}</p>
+                        <p><strong>Nearest Town (Finish):</strong> {trail.properties.NearestTownFinish}</p>
+                        <p><strong>Dogs Allowed:</strong> {trail.properties.DogsAllowed}</p>
+                        <p><strong>Waymarking:</strong> {trail.properties.WaymarkingDescription}</p>
+                        <p><strong>OSi Maps:</strong> {trail.properties.OSiMaps}</p>
+                        <p><strong>Management:</strong> {trail.properties.ManagementOrganisation}</p>
+                        <p><strong>Contact:</strong> {trail.properties.ContactDetails}</p>
                         <p><strong>Description:</strong> {trail.properties.Description}</p>
                         {trail.properties.Website && (
                             <p>
@@ -179,3 +212,5 @@ export default function MainActivity() {
     );
 
 }
+
+

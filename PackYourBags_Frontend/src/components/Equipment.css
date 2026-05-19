@@ -1,26 +1,102 @@
+/* Container */
 .equipment-container {
-    padding: 20px;
+    margin-left: 20px;
+    font-family: "Inter", sans-serif;
+    text-align: left;
 }
 
+/* Section subtitles */
 .equipment-subtitle {
     margin-bottom: 15px;
-    color: #555;
+    color: #666;
+    font-size: 0.95rem;
 }
 
+/* List layout */
 .equipment-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
+/* Each item row */
 .equipment-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 1rem;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: #f8f9fa;
+    border: 1px solid #e3e3e3;
+    transition: background 0.2s ease, border-color 0.2s ease;
     cursor: pointer;
 }
 
-.equipment-label {
+/* Hover effect */
+.equipment-item:hover {
+    background: #eef3f7;
+    border-color: #c7d7e0;
+}
+
+/* Hide native checkbox */
+.equipment-item input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Custom checkbox visual */
+.checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #6c757d;
+    border-radius: 6px;
+    background: white;
+    display: inline-block;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+/* Checkmark */
+.checkbox.checked::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 12px;
+    height: 12px;
+    background: #0d6efd;
+    border-radius: 3px;
+    transform: scale(1);
+    transition: transform 0.2s ease;
+}
+
+/* Hover effect on checkbox */
+.equipment-item:hover .checkbox {
+    border-color: #0d6efd;
+}
+
+/* Item text */
+.equipment-name {
+    font-size: 1rem;
+    color: #333;
     user-select: none;
+}
+
+/* Section headers */
+h3 {
+    margin-top: 25px;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    color: #2c3e50;
+}
+
+/* Save button area */
+.btnSaveEquipment {
+    margin-top: 20px;
+}
+
+/* Success message */
+.save-message {
+    margin-top: 10px;
 }

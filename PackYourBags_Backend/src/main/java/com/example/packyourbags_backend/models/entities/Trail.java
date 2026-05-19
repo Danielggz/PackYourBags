@@ -20,6 +20,8 @@ public class Trail {
     private Integer idTrail;
     private String name;
     private String county;
+    private float lat;
+    private float lon;
     @Column(name = "activityType") //Force Hibernate to respect camelCase
     private String activityType;
     private String description;
@@ -39,11 +41,13 @@ public class Trail {
 
     public Trail() {}
 
-    public Trail(Integer id, Integer idTrail, String name, String county, String activityType, String description, String difficulty, Integer lengthKm, String completionTime, Integer ascentMetres, String links, String SI_website, LocalDate plannedActivityDate, String trailType) {
+    public Trail(Integer id, Integer idTrail, String name, String county, float lat, float lon, String activityType, String description, String difficulty, Integer lengthKm, String completionTime, Integer ascentMetres, String links, String SI_website, LocalDate plannedActivityDate, String trailType) {
         this.id = id;
         this.idTrail = idTrail;
         this.name = name;
         this.county = county;
+        this.lat = lat;
+        this.lon = lon;
         this.activityType = activityType;
         this.description = description;
         this.difficulty = difficulty;
@@ -170,6 +174,22 @@ public class Trail {
 
     public String getTrailType() {
         return trailType;
+    }
+
+    public float getLat() {
+        return lat;
+    }
+
+    public void setLat(float lat) {
+        this.lat = lat;
+    }
+
+    public float getLon() {
+        return lon;
+    }
+
+    public void setLon(float lon) {
+        this.lon = lon;
     }
 
     public void setTrailType(String trailType) {

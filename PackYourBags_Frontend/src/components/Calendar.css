@@ -86,7 +86,6 @@
   top: 2px;
   right: 4px;
   font-size: 1rem;
-  pointer-events: none;
 }
 
 .calendar-cell-header {
@@ -124,4 +123,65 @@
 
 .activity-name {
     font-size: 0.7rem;
+}
+
+/* Modal styles */
+.weather-modal {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Header */
+.weather-modal-header {
+    background: #f5f7fa;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+    width: 100%;
+    justify-content: center;
+    position: relative;
+}
+
+.weather-modal-header .btn-close {
+    position: absolute;
+    right: 16px;
+}
+
+/* Body layout */
+.weather-modal-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+}
+
+/* Big icon */
+.weather-modal-icon-wrapper {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.weather-modal-icon {
+    width: 100px;
+    height: 100px;
+}
+
+.weather-modal-symbol {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+/* Details */
+.weather-modal-details {
+    font-size: 1rem;
+    background: #f9fbfd;
+    padding: 16px 20px;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 320px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.weather-modal-details p {
+    margin: 6px 0;
 }

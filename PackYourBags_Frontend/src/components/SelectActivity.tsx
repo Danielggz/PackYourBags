@@ -13,6 +13,8 @@ import "./SelectActivity.css"
       TrailID: number;
       Name?: string;
       County?: string;
+      lat?: number;
+      lon?: number;
       Activity?: string;
       Description?: string;
       Difficulty?: string;
@@ -32,6 +34,7 @@ export default function SelectActivity() {
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
   const [maxLength, setMaxLength] = useState(100);
+  const [minLength, setMinLength] = useState(0);
   const navigate = useNavigate();
 
   // States
@@ -109,11 +112,14 @@ export default function SelectActivity() {
         ? a.properties.TrailType === trailType
         : true;
       const lengthValue = Number(a.properties.LengthKm);
-      const lengthMatch = !isNaN(lengthValue) && lengthValue <= maxLength;
+      const lengthMatch =
+      !isNaN(lengthValue) &&
+      lengthValue >= minLength &&   // NEW
+      lengthValue <= maxLength;
 
       return nameMatch && diffMatch && countyMatch && typeMatch && lengthMatch;
     });
-  }, [activities, search, difficulty, county, trailType, maxLength]);
+  }, [activities, search, difficulty, county, trailType, minLength, maxLength]);
 
   // Autocomplete suggestions at select
   const suggestions = useMemo(() => {
@@ -170,9 +176,12 @@ export default function SelectActivity() {
         }
 
         if (start) {
-          const [lng, lat] = start;
+          //Store coordinates and use them to draw starter point
+          const [lon, lat] = start;
+          feature.properties.lat = lat;
+          feature.properties.lon = lon;
 
-          const marker = L.circleMarker([lat, lng], {
+          const marker = L.circleMarker([lat, lon], {
             radius: isSelected ? 7 : 4,
             color: isSelected ? "blue" : "green",
             fillColor: isSelected ? "blue" : "green",
@@ -261,39 +270,79 @@ export default function SelectActivity() {
 
     const mainTrail = activities.find(t => t.properties.TrailID === trailId);
     if (!mainTrail) return;
-
     // Filter by county (wait for response from backend)
     const userCounty = await getCurrentUserCounty();
 
-    const candidates = GLOBAL_TRAILS
-      .filter(t => t.properties.County == userCounty)
-      .filter(t => t.properties.LengthKm! < mainTrail.properties.LengthKm!)
-      .sort((a, b) => a.properties.LengthKm! - b.properties.LengthKm!);
+    const mainLength = Number(mainTrail.properties.LengthKm) || 0;
+    const mainAscent = Number(mainTrail.properties.AscentMetres) || 0;
 
-    console.log(candidates);
+    //Find candidates in array
+    const candidates = GLOBAL_TRAILS
+      .filter(t => t.properties.County === userCounty)
+      .filter(t => Number(t.properties.LengthKm) < mainLength)
+      .sort((a, b) => Number(a.properties.LengthKm) - Number(b.properties.LengthKm));
+
+    //Rules for length and ascent
+    const lengthCaps = [0.60, 0.70, 0.80];
+    const ascentCaps = [0.50, 0.60, 0.75];
 
     const weekendDates = computeUpcomingWeekends(plannedDate);
-
-    // Apply 80/70/60% rules
-    const caps = [0.80, 0.70, 0.60];
     const selectedTrainings: any[] = []; //obj array
 
     for (let i = 0; i < weekendDates.length; i++) {
-      const maxKm = mainTrail.properties.LengthKm! * caps[i];
+      const maxKm = mainLength * lengthCaps[i];
+      const maxAscent = mainAscent * ascentCaps[i];
 
-      const pick = candidates
-        .filter(t => t.properties.LengthKm! <= maxKm)
-        .sort((a, b) => b.properties.LengthKm! - a.properties.LengthKm!)[0];
+      //Find strict matches of conditions
+      let strictMatches = candidates.filter(t => {
+        const len = Number(t.properties.LengthKm) || 0;
+        const asc = Number(t.properties.AscentMetres);
 
-      if (pick) {
-        //Format into object
-        let formattedPick = formatTrailData(pick, "Training");
-        //Add objective date to the object
-        formattedPick.plannedActivityDate = weekendDates[i];
-        selectedTrainings.push(formattedPick);
-        candidates.splice(candidates.indexOf(pick), 1);
-      }
+        const lengthOK = len <= maxKm;
+        const ascentOK = isNaN(asc) || asc <= maxAscent;
+
+        return lengthOK && ascentOK;
+    });
+
+    //Pick the longest of strict candidates
+    let pick = null;
+    if (strictMatches.length > 0) {
+      pick = strictMatches.sort(
+        (a, b) => Number(b.properties.LengthKm) - Number(a.properties.LengthKm)
+      )[0];
+    } else {
+      // If there are no strict options, find the closest options by distance and ascent
+      pick = candidates
+        .map(t => {
+          const len = Number(t.properties.LengthKm) || 0;
+          const asc = Number(t.properties.AscentMetres) || 0;
+
+          return {
+            trail: t,
+            lengthDiff: Math.abs(len - maxKm),
+            ascentDiff: mainAscent > 0 ? Math.abs(asc - maxAscent) : 0
+          };
+        })
+        .sort((a, b) => {
+          // Sort by length closeness first
+          if (a.lengthDiff !== b.lengthDiff) {
+            return a.lengthDiff - b.lengthDiff;
+          }
+          // Then by ascent closeness
+          return a.ascentDiff - b.ascentDiff;
+        })[0]?.trail;
     }
+
+    //Add the selected trails
+    if (pick) {
+      let formattedPick = formatTrailData(pick, "Training");
+      formattedPick.plannedActivityDate = weekendDates[i];
+      selectedTrainings.push(formattedPick);
+
+      // Remove from candidates so it isn't reused
+      candidates.splice(candidates.indexOf(pick), 1);
+    }
+  }
 
     //Send all training trails to backend in a call
     const res = await fetch(`${API_BASE_URL}/api/trails/saveTrainingTrails`, {
@@ -355,6 +404,8 @@ export default function SelectActivity() {
       idTrail: selectedTrail.properties.TrailID,
       name: selectedTrail.properties.Name,
       county: selectedTrail.properties.County,
+      lat: selectedTrail.properties.lat,
+      lon: selectedTrail.properties.lon,
       activityType: selectedTrail.properties.Activity,
       description: selectedTrail.properties.Description,
       difficulty: selectedTrail.properties.Difficulty,
@@ -449,7 +500,11 @@ export default function SelectActivity() {
               )}
             </select>
           </div>
-
+          
+          <div className="filter-group">
+            <label>Min Length (km): {minLength}</label>
+            <input type="range" min="0" max="100" value={minLength} onChange={(e) => setMinLength(Number(e.target.value))} style={{ width: "100%" }}/>
+          </div>
           <div className="filter-group">
             <label>Max Length (km): {maxLength}</label>
             <input type="range" min="1" max="100" value={maxLength} onChange={(e) => setMaxLength(Number(e.target.value))} style={{ width: "100%" }}/>

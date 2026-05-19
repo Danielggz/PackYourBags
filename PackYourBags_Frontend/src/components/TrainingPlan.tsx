@@ -60,6 +60,7 @@ function TrainingPlanItem({ trailId }: { trailId: number }) {
     const mapRef = useRef<L.Map | null>(null);
     const layerRef = useRef<L.LayerGroup | null>(null);
     const [trail, setTrail] = useState<TrailFeature | null>(null);
+    const [showModal, setShowModal] = useState(false);
 
     // Create map
     useEffect(() => {
@@ -176,6 +177,61 @@ function TrainingPlanItem({ trailId }: { trailId: number }) {
                     <p><strong>Time:</strong> {trail.properties.TimeToComplete}</p>
                 </div>
             )}
+
+            <button className="btn btn-primary mt-2" onClick={() => setShowModal(true)} >
+                View Full Details
+            </button>
+            {/* Bootstrap modal */}
+            {showModal && trail && (
+                <div className="modal fade show" style={{ display: "block", background: "rgba(0,0,0,0.5)" }} onClick={() => setShowModal(false)} >
+                    <div className="modal-dialog modal-lg modal-dialog-centered" onClick={(e) => e.stopPropagation()} >
+                        <div className="modal-content">
+
+                            <div className="modal-header">
+                                <h5 className="modal-title">{trail.properties.Name}</h5>
+                                <button type="button" className="btn-close" onClick={() => setShowModal(false)} ></button>
+                            </div>
+
+                            <div className="modal-body" style={{ maxHeight: "70vh", overflowY: "auto" }} >
+                                <p><strong>County:</strong> {trail.properties.County}</p>
+                                <p><strong>Activity:</strong> {trail.properties.Activity}</p>
+                                <p><strong>Trail Type:</strong> {trail.properties.TrailType}</p>
+                                <p><strong>Format:</strong> {trail.properties.Format}</p>
+                                <p><strong>Grade:</strong> {trail.properties.Grade}</p>
+                                <p><strong>Length:</strong> {trail.properties.LengthKm} km</p>
+                                <p><strong>Ascent:</strong> {trail.properties.AscentMetres} m</p>
+                                <p><strong>Estimated Time:</strong> {trail.properties.TimeToComplete}</p>
+                                <p><strong>Start Point:</strong> {trail.properties.StartPoint}</p>
+                                <p><strong>Finish Point:</strong> {trail.properties.FinishPoint}</p>
+                                <p><strong>Nearest Town (Start):</strong> {trail.properties.NearestTownStart}</p>
+                                <p><strong>Nearest Town (Finish):</strong> {trail.properties.NearestTownFinish}</p>
+                                <p><strong>Dogs Allowed:</strong> {trail.properties.DogsAllowed}</p>
+                                <p><strong>Waymarking:</strong> {trail.properties.WaymarkingDescription}</p>
+                                <p><strong>OSi Maps:</strong> {trail.properties.OSiMaps}</p>
+                                <p><strong>Management:</strong> {trail.properties.ManagementOrganisation}</p>
+                                <p><strong>Contact:</strong> {trail.properties.ContactDetails}</p>
+                                <p><strong>Description:</strong> {trail.properties.Description}</p>
+
+                                {trail.properties.Website && (
+                                    <p>
+                                        <a href={trail.properties.Website} target="_blank" rel="noreferrer" >
+                                            Visit Website
+                                        </a>
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="modal-footer">
+                                <button className="btn btn-secondary" onClick={() => setShowModal(false)} >
+                                    Close
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { API_BASE_URL } from "../config/api";
 
 //Normalized object for weather
-type DailyWeather = {
+export type DailyWeather = {
   date: string;
   symbol: string;
   minTemp: number;
@@ -10,10 +10,16 @@ type DailyWeather = {
   wind: number;
 };
 
-export function WeatherForecast({ lat, lon }: { lat: number; lon: number }) {
+export function useWeatherForecast(lat: number, lon: number) {
   const [forecast, setForecast] = useState<DailyWeather[]>([]);
 
   useEffect(() => {
+
+    if (lat == null || lon == null) {
+      setForecast([]);
+      return;
+    }
+
     async function loadWeather() {
       try {
         //Call backend to retrieve api
@@ -25,8 +31,16 @@ export function WeatherForecast({ lat, lon }: { lat: number; lon: number }) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(xml, "text/xml");
 
-        //Forecast divided in times
-        const times = Array.from(doc.getElementsByTagName("time"));
+        
+        const now = new Date();
+        //Filter times by current or future forecasts
+        const times = Array.from(doc.getElementsByTagName("time"))
+          .filter(t => {
+              const from = t.getAttribute("from");
+              if (!from) return false;
+              const date = new Date(from);
+              return date >= now;
+          });
 
         //Set records into daily averages
         const dailyMap: Record<
@@ -81,13 +95,16 @@ export function WeatherForecast({ lat, lon }: { lat: number; lon: number }) {
             d.winds.length > 0
               ? d.winds.reduce((a, b) => a + b, 0) / d.winds.length
               : 0;
+            
+          //Convert wind to km/h and round it
+          const avgWindKmh = Math.round(avgWind * 3.6);
 
           return {
             date: d.date,
             symbol,
             minTemp,
             maxTemp,
-            wind: avgWind,
+            wind: avgWindKmh,
           };
         });
 
@@ -98,7 +115,7 @@ export function WeatherForecast({ lat, lon }: { lat: number; lon: number }) {
     }
 
     loadWeather();
-  }, []);
+  }, [lat, lon]);
 
   return forecast;
 }
