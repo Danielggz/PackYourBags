@@ -20,8 +20,10 @@ public class Trail {
     private Integer idTrail;
     private String name;
     private String county;
-    private float lat;
-    private float lon;
+    @Column(nullable = false)
+    private Float lat = 0f;
+    @Column(nullable = false)
+    private Float lon = 0f;
     @Column(name = "activityType") //Force Hibernate to respect camelCase
     private String activityType;
     private String description;
