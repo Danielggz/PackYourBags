@@ -56,9 +56,11 @@ export default function Calendar({ setActiveTab }: { setActiveTab: (tab: string)
     const lon = mainTrail?.lon;
 
     //Call hook with main trail coordinates
-    const forecast = useWeatherForecast(lat, lon);
-
-    console.log(forecast);
+    let forecast: DailyWeather[] = [];
+    //Check if lat and lon are defined
+    if (lat !== undefined && lon !== undefined) {
+        forecast = useWeatherForecast(lat, lon);
+    }
 
     //New date obj
     const today = new Date();
@@ -239,7 +241,6 @@ export default function Calendar({ setActiveTab }: { setActiveTab: (tab: string)
 
     //Redirect to locations
     function goToActivity(act: any) {
-        console.log("here!");
         if (act.trailType === "Main") {
             setActiveTab("main");
         } else if (act.trailType === "Training") {

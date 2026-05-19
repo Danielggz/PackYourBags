@@ -4,7 +4,7 @@ import { vi } from "vitest";
 
 // Mock WeatherForecast
 vi.mock("../utils/WeatherForecast", () => ({
-    WeatherForecast: () => [
+    useWeatherForecast: () => [
         { date: "2026-05-20", symbol: "Sun" },
         { date: "2026-05-25", symbol: "Rain" }
     ]

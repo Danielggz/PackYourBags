@@ -3,7 +3,7 @@ import { vi } from "vitest";
 import Equipment from "../components/Equipment";
 
 // Mock weather hook
-vi.mock("../hooks/useWeatherForecast", () => ({
+vi.mock("../utils/WeatherForecast", () => ({
   useWeatherForecast: () => ([
     { date: "2026-05-19", symbol: "LightRain", minTemp: 7, maxTemp: 10, wind: 25 }
   ])
