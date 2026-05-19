@@ -34,7 +34,11 @@ class TrailControllerIntegrationTest extends AbstractMysqlTest {
         trailRepo.deleteAll();
         userRepo.deleteAll();
 
-        User user = new User("JD", "John", "Doe", "john@example.com", "m", "somewhere", 180, 75.0F, "pass123");
+        User user = new User(
+                "JD", "John", "Doe",
+                "john@example.com", "m",
+                "somewhere", 180, 75.0F, "pass123"
+        );
         userRepo.save(user);
     }
 
@@ -42,13 +46,17 @@ class TrailControllerIntegrationTest extends AbstractMysqlTest {
     void saveTrail_savesTrailForUser() throws Exception {
         User user = userRepo.findAll().get(0);
 
+        // ⭐ Include idUser so Jackson does not reject the JSON
         String json = """
         {
             "idTrail": 1,
+            "idUser": %d,
             "name": "Wicklow Way",
-            "trailType": "Main"
+            "trailType": "Main",
+            "lat": 0,
+            "lon": 0
         }
-        """;
+        """.formatted(user.getId());
 
         mockMvc.perform(post("/api/trails/saveTrail")
                         .sessionAttr("userId", user.getId())
@@ -62,12 +70,13 @@ class TrailControllerIntegrationTest extends AbstractMysqlTest {
     void saveTrainingTrails_savesMultiple() throws Exception {
         User user = userRepo.findAll().get(0);
 
+        // ⭐ Include idUser + lat/lon to avoid Jackson errors
         String json = """
         [
-            { "idTrail": 1, "name": "Trail A", "trailType": "Training" },
-            { "idTrail": 2, "name": "Trail B", "trailType": "Training" }
+            { "idTrail": 1, "idUser": %d, "name": "Trail A", "trailType": "Training", "lat": 0, "lon": 0 },
+            { "idTrail": 2, "idUser": %d, "name": "Trail B", "trailType": "Training", "lat": 0, "lon": 0 }
         ]
-        """;
+        """.formatted(user.getId(), user.getId());
 
         mockMvc.perform(post("/api/trails/saveTrainingTrails")
                         .sessionAttr("userId", user.getId())
